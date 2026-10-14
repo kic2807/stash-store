@@ -65,12 +65,45 @@ commands fail with `Unable to find image 'authelia:latest'`.
 
    Back these files up somewhere safe (password manager). Umbrel backups include them too.
 
-3. **Users:** copy the example and add a password hash.
+3. **Users** (`users_database.yml` is the list of accounts; one is enough).
+
+   Make a password hash. It asks for the password twice and prints
+   `Digest: $argon2id$v=19$m=65536,...`; copy everything from `$argon2id$` to
+   the end. Keep the password in a password manager: it is needed for the first
+   login, for registering passkeys, and for `two_factor` services.
 
    ```sh
-   IMG=authelia/authelia:4.39.28; D=~/umbrel/app-data/stash-authelia/data
-   sudo docker run --rm -it $IMG authelia crypto hash generate argon2   # prompts for the password
-   nano $D/config/users_database.yml     # paste users_database.example.yml, set name/email/digest
+   sudo docker run --rm -it authelia/authelia:4.39.28 authelia crypto hash generate argon2
+   ```
+
+   Create the file:
+
+   ```sh
+   nano ~/umbrel/app-data/stash-authelia/data/config/users_database.yml
+   ```
+
+   ```yaml
+   users:
+     <login id, e.g. alice>:
+       disabled: false
+       displayname: '<display name>'
+       password: '<the whole $argon2id$... digest>'
+       email: '<email>'
+       groups:
+         - 'admins'
+   ```
+
+   - The login id is what you type on the login page. Lowercase letters are safest.
+   - Keep the single quotes around the digest; it contains `$`.
+   - No mail is sent (no SMTP), but Immich/Gitea match OIDC logins by email,
+     so use the same email as your accounts there.
+   - `groups` is only used if `access_control` rules use `group:admins`.
+   - Indent with spaces, never tabs.
+
+   Save (`Ctrl+O`, `Enter`, `Ctrl+X`) and lock it:
+
+   ```sh
+   chmod 600 ~/umbrel/app-data/stash-authelia/data/config/users_database.yml
    ```
 
 4. **Configuration:** paste `configuration.example.yml` into
