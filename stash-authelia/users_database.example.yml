@@ -1,0 +1,15 @@
+# Copy to ~/umbrel/app-data/stash-authelia/data/config/users_database.yml.
+# Do not commit the real file.
+#
+# Password hash:
+#   sudo docker run --rm -it authelia/authelia:4.39.28 authelia crypto hash generate argon2
+# (prompts for the password and prints a $argon2id$... digest)
+
+users:
+  alice:
+    disabled: false
+    displayname: 'Alice'
+    password: '$argon2id$v=19$m=65536,t=3,p=4$REPLACE_WITH_DIGEST'
+    email: 'alice@example.com'
+    groups:
+      - 'admins'

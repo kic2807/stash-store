@@ -1,0 +1,140 @@
+# Authelia 4.39 configuration for stash-authelia.
+#
+# Copy to ~/umbrel/app-data/stash-authelia/data/config/configuration.yml and
+# replace every example.com with your domain. Do not commit the real file.
+#
+# Secrets are NOT in this file. They are read from /secrets/* via the
+# AUTHELIA_*_FILE variables in docker-compose.yml, and the OIDC signing key via
+# the {{ secret }} template below. Putting a secret here as well makes Authelia
+# refuse to start.
+
+theme: auto
+
+server:
+  address: 'tcp://:9091/'
+  endpoints:
+    authz:
+      # Used by Nginx Proxy Manager: /api/authz/auth-request
+      auth-request:
+        implementation: 'AuthRequest'
+
+log:
+  level: info
+
+totp:
+  issuer: 'example.com'
+
+webauthn:
+  disable: false
+  # Log in with a passkey instead of username + password.
+  enable_passkey_login: true
+  display_name: 'Stash'
+  selection_criteria:
+    # Store the credential on the device so it works as a passkey.
+    discoverability: 'required'
+    user_verification: 'required'
+  # A passkey login only counts as one factor. two_factor rules then also ask
+  # for the password. Uncomment to let a passkey with user verification
+  # (Face ID, fingerprint, PIN) satisfy two_factor too. Upstream marks this as
+  # experimental and it will be replaced by custom policies in a later release.
+  # experimental_enable_passkey_uv_two_factors: true
+
+authentication_backend:
+  file:
+    path: '/config/users_database.yml'
+    password:
+      algorithm: 'argon2'
+
+# Users still need a password: for the first login, to register a passkey, and
+# for two_factor rules (unless the experimental option above is on).
+password_policy:
+  zxcvbn:
+    enabled: true
+    min_score: 3
+
+access_control:
+  # Anything not listed below is blocked.
+  default_policy: 'deny'
+  rules:
+    # Media management behind forward auth (passkey alone is enough).
+    - domain:
+        - 'radarr.example.com'
+        - 'sonarr.example.com'
+        - 'prowlarr.example.com'
+      policy: 'one_factor'
+
+    # Admin and download tools: require two factors.
+    - domain:
+        - 'qbit.example.com'
+        - 'npm.example.com'
+      policy: 'two_factor'
+
+    # Apps that use Authelia through OIDC (Immich, Gitea, RomM, Jellyfin) do not
+    # need rules here; their policy is set per client below.
+
+session:
+  # Memory provider (no Redis): sessions are lost when Authelia restarts.
+  cookies:
+    - name: 'authelia_session'
+      domain: 'example.com'
+      authelia_url: 'https://auth.example.com'
+      default_redirection_url: 'https://www.example.com'
+      inactivity: '1 day'
+      expiration: '1 week'
+      remember_me: '1 month'
+
+regulation:
+  max_retries: 5
+  find_time: '10 minutes'
+  ban_time: '1 hour'
+
+storage:
+  local:
+    path: '/var/lib/authelia/db.sqlite3'
+
+# No SMTP: one-time codes (identity verification for registering a passkey,
+# password reset) are written to this file. Read it with:
+#   sudo tail ~/umbrel/app-data/stash-authelia/data/db/notification.txt
+notifier:
+  filesystem:
+    filename: '/var/lib/authelia/notification.txt'
+
+identity_providers:
+  oidc:
+    jwks:
+      - key_id: 'main'
+        algorithm: 'RS256'
+        use: 'sig'
+        key: {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
+    clients:
+      # Immich: Administration -> Settings -> Authentication -> OAuth
+      #   Issuer URL: https://auth.example.com/.well-known/openid-configuration
+      #   Client ID: immich, Client Secret: the plain secret for the digest below
+      - client_id: 'immich'
+        client_name: 'Immich'
+        # Digest of the client secret, NOT the secret itself. Generate with:
+        #   authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
+        client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+        public: false
+        authorization_policy: 'one_factor'
+        require_pkce: true
+        pkce_challenge_method: 'S256'
+        redirect_uris:
+          - 'https://immich.example.com/auth/login'
+          - 'https://immich.example.com/user-settings'
+          - 'app.immich:///oauth-callback'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+        response_types:
+          - 'code'
+        grant_types:
+          - 'authorization_code'
+        access_token_signed_response_alg: 'none'
+        userinfo_signed_response_alg: 'none'
+        token_endpoint_auth_method: 'client_secret_basic'
+
+      # Add Gitea, RomM and Jellyfin the same way. Copy the client block from
+      # https://www.authelia.com/integration/openid-connect/ for each app (the
+      # redirect URIs and token_endpoint_auth_method differ per app).
