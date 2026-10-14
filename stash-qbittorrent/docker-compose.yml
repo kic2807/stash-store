@@ -1,0 +1,81 @@
+version: "3.7"
+
+# qBittorrent and qui share the tailscale container's network namespace, so all
+# their traffic leaves through the Tailscale exit node set in .env.
+# The tailscale service therefore owns the IP and all published ports, and
+# app_proxy must target it (umbrelOS resolves APP_HOST to that container's IP).
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: stash-qbittorrent_tailscale_1
+      # qui web UI
+      APP_PORT: 7476
+
+  tailscale:
+    image: tailscale/tailscale:v1.104.1@sha256:87c55d6be56ad85b3d8bceca5f87f73de288c609131460dd1be1874c250cc41d
+    hostname: umbrel-qbit-node
+    restart: on-failure
+    # Kernel TUN mode is needed to route the other containers' traffic through
+    # the exit node.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_ACCEPT_DNS: "true"
+      TS_ENABLE_HEALTH_CHECK: "true"
+      TS_LOCAL_ADDR_PORT: 127.0.0.1:9002
+    # TS_AUTHKEY and TS_EXTRA_ARGS (exit node) come from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      - ${APP_DATA_DIR}/data/tailscale:/var/lib/tailscale
+    ports:
+      # qBittorrent WebUI (direct LAN access, *arr apps can also use the
+      # container name stash-qbittorrent_tailscale_1:30024 instead)
+      - "30024:30024"
+      # BitTorrent listen port
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+    # Health status only (docker ps). Not used as a start condition: before .env
+    # exists the node is not logged in, and waiting on it would fail the install.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9002/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:5.2.4_v2.0.15-ls480@sha256:97333cc1ccf903e0bbcd8eb67e3332e4970e9c1ecabe145e499e9c0847ebcaed
+    network_mode: service:tailscale
+    restart: on-failure
+    depends_on:
+      - tailscale
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Seoul
+      WEBUI_PORT: "30024"
+      TORRENTING_PORT: "6881"
+    volumes:
+      - ${APP_DATA_DIR}/data/qbittorrent:/config
+      # Same path as the official qBittorrent/Radarr/Sonarr/Jellyfin apps.
+      - ${UMBREL_ROOT}/data/storage/downloads:/downloads
+
+  qui:
+    image: ghcr.io/autobrr/qui:v1.32.0@sha256:13a09cb0f27004dd19510f6af37aac140164ba0f9a13333b8698e41bd2d1df4c
+    network_mode: service:tailscale
+    restart: on-failure
+    depends_on:
+      - tailscale
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+    volumes:
+      - ${APP_DATA_DIR}/data/qui:/config

@@ -1,0 +1,38 @@
+manifestVersion: 1
+id: stash-qbittorrent
+category: networking
+name: qBittorrent (VPN)
+version: "5.2.4"
+tagline: qBittorrent and qui behind a Tailscale exit node
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg
+description: >-
+  qBittorrent with the qui web UI. All torrent traffic leaves through a Tailscale exit node.
+
+
+  Before starting, create the .env file described in the store README (TS_AUTHKEY, TS_EXTRA_ARGS) in the app data folder, then restart the app.
+
+
+  After the first start, open the qBittorrent WebUI on port 30024 and bind it to the tailscale0 interface (see README) so torrents stop instead of leaking if the VPN drops.
+
+
+  Opening the app launches qui. Add the qBittorrent instance in qui as http://localhost:30024.
+releaseNotes: ""
+
+developer: qBittorrent / autobrr / Tailscale
+website: https://www.qbittorrent.org
+dependencies: []
+repo: https://github.com/kic2807/stash-store
+support: https://github.com/kic2807/stash-store/issues
+
+port: 30476
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+permissions:
+  - STORAGE_DOWNLOADS
+
+submitter: kic2807
+submission: https://github.com/kic2807/stash-store
