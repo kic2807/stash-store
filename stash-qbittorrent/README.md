@@ -39,7 +39,7 @@ Persistent data under `~/umbrel/app-data/stash-qbittorrent/data/`:
 4. Check that traffic leaves through the exit node:
 
    ```sh
-   sudo docker exec stash-qbittorrent_tailscale_1 wget -qO- https://ifconfig.me; echo
+   sudo docker exec stash-qbittorrent_tailscale_1 wget -T 10 -qO- https://ifconfig.me/ip; echo
    ```
 
    It must print the exit node's public IP, not your home IP.
