@@ -268,7 +268,7 @@ Every protected domain also needs a matching rule in `access_control`
 ## OIDC clients
 
 Apps that can log in through Authelia: **Immich, Gitea, RomM, Jellyfin** (SSO
-plugin) and **autobrr**. Radarr, Sonarr, Prowlarr, qBittorrent and NPM have no
+plugin), **autobrr** and **Stump**. Radarr, Sonarr, Prowlarr, qBittorrent and NPM have no
 OIDC support; protect them with forward auth instead.
 
 `configuration.yml` contains a commented-out block for each of them. To add
@@ -301,6 +301,7 @@ the first app:
 | RomM | `https://auth.<domain>` | `romm` | Umbrel → RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_PROVIDER=authelia`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI=https://romm.<domain>/api/oauth/openid`, `OIDC_SERVER_APPLICATION_URL=https://auth.<domain>` | names from the Authelia RomM guide |
 | Jellyfin | `https://auth.<domain>` | `jellyfin` | Dashboard → Plugins → install **SSO Authentication** (9p4) → add provider named `authelia` | the provider name is in the redirect URI |
 | autobrr | `https://auth.<domain>` | `autobrr` | `~/umbrel/app-data/autobrr/data/config.toml`: `oidcEnabled`, `oidcIssuer`, `oidcClientId`, `oidcClientSecret`, `oidcRedirectUrl = "https://autobrr.<domain>/api/auth/oidc/callback"` | not covered by Authelia's guides; check autobrr's logs |
+| Stump | `https://auth.<domain>` | `stump` | `~/umbrel/app-data/stash-stump/data/.env` from `stash-stump/.env.example` | see stash-stump README |
 
 Authelia's per-app guides:
 [Immich](https://www.authelia.com/integration/openid-connect/clients/immich/),
@@ -308,7 +309,7 @@ Authelia's per-app guides:
 [RomM](https://www.authelia.com/integration/openid-connect/clients/romm/),
 [Jellyfin](https://www.authelia.com/integration/openid-connect/clients/jellyfin/).
 
-The redirect URIs use `immich.`, `code.`, `romm.`, `jellyfin.` and `autobrr.`
+The redirect URIs use `immich.`, `code.`, `romm.`, `jellyfin.`, `autobrr.` and `stump.`
 subdomains. If you use other names, change them in both the client block and
 the NPM proxy host.
 

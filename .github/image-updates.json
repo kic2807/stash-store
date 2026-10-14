@@ -27,6 +27,10 @@
       "tag": "^(?P<v>\\d+\\.\\d+(?:\\.\\d+)?)$",
       "automerge": ["major", "minor", "patch"]
     },
+    "aaronleopold/stump": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "automerge": ["patch"]
+    },
     "authelia/authelia": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
       "automerge": ["patch"]
@@ -36,6 +40,7 @@
     "stash-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
     "stash-gitea-act-runner": { "primary": "gitea/runner" },
     "stash-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
-    "stash-authelia": { "primary": "authelia/authelia" }
+    "stash-authelia": { "primary": "authelia/authelia" },
+    "stash-stump": { "primary": "aaronleopold/stump" }
   }
 }

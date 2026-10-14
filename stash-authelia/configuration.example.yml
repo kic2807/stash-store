@@ -212,3 +212,21 @@ notifier:
 #         access_token_signed_response_alg: 'none'
 #         userinfo_signed_response_alg: 'none'
 #         token_endpoint_auth_method: 'client_secret_basic'
+#
+#       # Stump (https://www.stumpapp.dev/docs/guides/access-control/oidc)
+#       # Stump: STUMP_OIDC_* in ~/umbrel/app-data/stash-stump/data/.env
+#       - client_id: 'stump'
+#         client_name: 'Stump'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: false
+#         pkce_challenge_method: ''
+#         redirect_uris:
+#           - 'https://stump.example.com/api/v2/auth/oidc/callback'
+#         scopes: ['openid', 'profile', 'email']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_basic'
