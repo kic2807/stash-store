@@ -1,7 +1,7 @@
 version: "3.7"
 
-# qBittorrent and qui share the tailscale container's network namespace, so all
-# their traffic leaves through the Tailscale exit node set in .env.
+# qBittorrent shares the tailscale container's network namespace, so all
+# its traffic leaves through the Tailscale exit node set in .env.
 # The tailscale service therefore owns the IP and all published ports, and
 # app_proxy must target it (umbrelOS resolves APP_HOST to that container's IP).
 
@@ -9,8 +9,10 @@ services:
   app_proxy:
     environment:
       APP_HOST: stash-qbittorrent_tailscale_1
-      # qui web UI
-      APP_PORT: 7476
+      APP_PORT: 30024
+      # Same as the official qBittorrent app: the WebUI API has its own login,
+      # so API clients (mobile apps, browser extensions) can bypass Umbrel login.
+      PROXY_AUTH_WHITELIST: "/api/*"
 
   tailscale:
     image: tailscale/tailscale:v1.104.1@sha256:87c55d6be56ad85b3d8bceca5f87f73de288c609131460dd1be1874c250cc41d
@@ -36,9 +38,6 @@ services:
     volumes:
       - ${APP_DATA_DIR}/data/tailscale:/var/lib/tailscale
     ports:
-      # qBittorrent WebUI (direct LAN access, *arr apps can also use the
-      # container name stash-qbittorrent_tailscale_1:30024 instead)
-      - "30024:30024"
       # BitTorrent listen port
       - "6881:6881/tcp"
       - "6881:6881/udp"
@@ -68,14 +67,3 @@ services:
       # Same path as the official qBittorrent/Radarr/Sonarr/Jellyfin apps.
       - ${UMBREL_ROOT}/data/storage/downloads:/downloads
 
-  qui:
-    image: ghcr.io/autobrr/qui:v1.32.0@sha256:13a09cb0f27004dd19510f6af37aac140164ba0f9a13333b8698e41bd2d1df4c
-    network_mode: service:tailscale
-    restart: on-failure
-    depends_on:
-      - tailscale
-    environment:
-      PUID: "1000"
-      PGID: "1000"
-    volumes:
-      - ${APP_DATA_DIR}/data/qui:/config
