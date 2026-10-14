@@ -1,0 +1,41 @@
+{
+  "_comment": "Rules for .github/scripts/update_images.py. 'tag' must have a named group 'v' (the upstream version, X.Y or X.Y.Z); other named groups are build numbers. 'automerge' lists the bump kinds merged without review: major, minor, patch, build. 'primary' is the image whose version becomes the app version; other images only bump the -N packaging revision.",
+  "images": {
+    "favonia/cloudflare-ddns": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "automerge": ["minor", "patch"]
+    },
+    "gitea/runner": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "automerge": ["minor", "patch"]
+    },
+    "docker": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-dind$",
+      "automerge": ["minor", "patch"]
+    },
+    "lscr.io/linuxserver/qbittorrent": {
+      "lookup": "ghcr.io/linuxserver/qbittorrent",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)_v(?P<lt1>\\d+)\\.(?P<lt2>\\d+)\\.(?P<lt3>\\d+)-ls(?P<ls>\\d+)$",
+      "automerge": ["patch", "build"]
+    },
+    "tailscale/tailscale": {
+      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "even_minor": true,
+      "automerge": ["minor", "patch"]
+    },
+    "registry.k8s.io/pause": {
+      "tag": "^(?P<v>\\d+\\.\\d+(?:\\.\\d+)?)$",
+      "automerge": ["major", "minor", "patch"]
+    },
+    "authelia/authelia": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "automerge": ["patch"]
+    }
+  },
+  "apps": {
+    "stash-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
+    "stash-gitea-act-runner": { "primary": "gitea/runner" },
+    "stash-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
+    "stash-authelia": { "primary": "authelia/authelia" }
+  }
+}

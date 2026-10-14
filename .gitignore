@@ -6,3 +6,4 @@ users_database.yml
 **/data/secrets/*
 !**/data/secrets/.gitkeep
 *.pem
+__pycache__/

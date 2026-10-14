@@ -24,7 +24,6 @@ The apps show up under **Stash App Store**.
 | [stash-gitea-act-runner](stash-gitea-act-runner/README.md) | 5.0.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. | `.env` |
 | [stash-qbittorrent](stash-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
 | [stash-authelia](stash-authelia/README.md) | 4.39.28 | 30091 | SSO with passkeys: NPM forward auth + OIDC provider. | config files + secret files |
-| [stash-hello-world](stash-hello-world/README.md) | 1.0.1 | 4000 | Test app for the store and the `.env` mechanism. | optional `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
@@ -36,7 +35,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, gitea-act-runner, qbittorrent, hello-world)
+### `.env` apps (cloudflare-ddns, gitea-act-runner, qbittorrent)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -78,7 +77,33 @@ Configuration files under `data/config/` and one secret per file under
 6. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
 7. Protect apps with NPM forward auth / connect OIDC apps one by one.
 
-## Updating an app
+## Automatic image updates
+
+`.github/workflows/update-images.yml` runs daily (04:23 KST, or manually from
+the Actions tab). `.github/scripts/update_images.py` checks every pinned image
+against the rules in `.github/image-updates.json` and, per app with a newer
+image:
+
+- updates `image: tag@sha256:digest` (multi-arch index digest, must include linux/amd64),
+- sets `version` to the primary image's upstream version, or bumps the `-N`
+  revision when only a secondary image changed (e.g. tailscale in qbittorrent),
+- opens a PR on branch `auto-update/<app>`.
+
+The PR is merged automatically when every change is an allowed kind for its
+image; otherwise it stays open with the `needs-review` label:
+
+| Image | Auto-merged | Needs review |
+|-------|-------------|--------------|
+| favonia/cloudflare-ddns, gitea/runner, docker (dind), tailscale | minor, patch | major |
+| linuxserver/qbittorrent | patch, linuxserver rebuild | minor, major |
+| registry.k8s.io/pause | all | — |
+| authelia/authelia | patch | minor, major (config format changes) |
+
+Merged updates only make the update button appear in Umbrel; nothing is
+installed until you press it. Run `python3 .github/scripts/update_images.py`
+locally to see pending updates without changing anything.
+
+## Updating an app by hand
 
 Umbrel shows an update when the `version` in `umbrel-app.yml` differs from the
 installed one. To update:
