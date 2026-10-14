@@ -1,8 +1,8 @@
 manifestVersion: 1
 id: stash-qbittorrent
 category: networking
-name: qBittorrent (VPN)
-version: "5.2.4-1"
+name: qBittorrent
+version: "5.2.4-2"
 tagline: qBittorrent behind a Tailscale exit node
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg
 description: >-
@@ -14,7 +14,7 @@ description: >-
 
   Torrents are bound to the tailscale0 interface on new installs, so they stop instead of leaking if the VPN drops. Keep Tools -> Options -> Advanced -> Network interface set to tailscale0.
 releaseNotes: >-
-  Fix: the WebUI stopped responding after the tailscale container restarted. All services now share a separate network container. New installs bind torrents to tailscale0 by default.
+  Renamed from "qBittorrent (VPN)" to "qBittorrent".
 
 developer: qBittorrent / Tailscale
 website: https://www.qbittorrent.org
