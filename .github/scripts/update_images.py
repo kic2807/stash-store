@@ -9,12 +9,18 @@ For each app listed in .github/image-updates.json:
     packaging revision when only other images changed) and `releaseNotes`.
 
 With --apply it commits each app to branch auto-update/<app>, opens or updates
-the PR, and merges it when every bump kind is allowed by the image's
-`automerge` rule. Without --apply it only prints what it would do.
+the PR, and merges it unless a change needs review. A change needs review when
+  - the upstream release notes between the old and new version mention a
+    breaking change, or
+  - its bump kind is listed in the image's `always_review`, or
+  - the image has no usable release notes and the bump kind is not in its
+    `automerge` fallback list.
+Without --apply it only prints what it would do.
 """
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -34,6 +40,12 @@ ACCEPT = ", ".join([
 ])
 IMAGE_RE = re.compile(r"^(\s*image:\s*)(\S+):([^@\s]+)@(sha256:[0-9a-f]{64})\s*$", re.M)
 KINDS = ["major", "minor", "patch", "build"]
+# Phrases upstreams use to flag breaking changes. Uppercase BREAKING only, so
+# prose like "instead of breaking the container" does not match.
+BREAKING_RE = re.compile(
+    r"(?i:breaking[ -]?changes?|action required|manual (?:migration|intervention|steps?)|incompatible)"
+    r"|\bBREAKING\b|\u26a0"
+)
 
 
 # --- registry -------------------------------------------------------------
@@ -88,6 +100,68 @@ def index_digest(name, tag):
         if m.get("platform", {}).get("os") not in (None, "unknown")
     }
     return digest, platforms
+
+
+# --- release notes --------------------------------------------------------
+
+def _get_json(url, headers=None):
+    req = urllib.request.Request(url, headers={"Accept": "application/json", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.load(resp)
+
+
+def fetch_releases(source):
+    """Yield (tag, body, prerelease) from a GitHub or Gitea releases API."""
+    if "github" in source:
+        token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+        headers = {"Authorization": f"Bearer {token}"} if token else {}
+        for page in range(1, 4):
+            batch = _get_json(f"https://api.github.com/repos/{source['github']}/releases?per_page=100&page={page}", headers)
+            for rel in batch:
+                if not rel.get("draft"):
+                    yield rel["tag_name"], rel.get("body") or "", rel.get("prerelease", False)
+            if len(batch) < 100:
+                return
+    elif "gitea" in source:
+        host, repo = source["gitea"].split("/", 1)
+        for page in range(1, 4):
+            batch = _get_json(f"https://{host}/api/v1/repos/{repo}/releases?limit=50&page={page}")
+            for rel in batch:
+                if not rel.get("draft"):
+                    yield rel["tag_name"], rel.get("body") or "", rel.get("prerelease", False)
+            if len(batch) < 50:
+                return
+
+
+def breaking_notes(rule, old, new):
+    """Lines flagging breaking changes in releases (old, new].
+
+    Returns None when the image has no release-notes source or it could not be
+    read, otherwise a list of "tag: line" strings (empty = nothing breaking).
+    """
+    source = rule.get("notes")
+    if not source:
+        return None
+    tag_re = re.compile(source.get("tag", r"^v?(?P<v>\d+\.\d+(?:\.\d+)?)$"))
+    found, seen = [], False
+    try:
+        for tag, body, prerelease in fetch_releases(source):
+            match = tag_re.match(tag)
+            if not match or prerelease:
+                continue
+            version = tuple(int(x) for x in match.group("v").split("."))
+            version += (0,) * (3 - len(version))
+            if not old < version <= new:
+                continue
+            seen = True
+            found += [f"{tag}: {line.strip()[:200]}" for line in body.splitlines() if BREAKING_RE.search(line)]
+    except (urllib.error.URLError, ValueError, KeyError) as err:
+        print(f"  ! release notes for {source} unavailable: {err}", file=sys.stderr)
+        return None
+    # A rebuild of the same upstream version has no new release: nothing to flag.
+    if not seen and old != new:
+        return None
+    return found
 
 
 # --- versions -------------------------------------------------------------
@@ -161,10 +235,20 @@ def plan_app(app, app_cfg):
             print(f"  ! {name}:{new_tag} has no linux/amd64 image, skipped", file=sys.stderr)
             continue
         kind = bump_kind(current, new_parsed)
+        breaking = breaking_notes(rule, current[0], new_parsed[0])
+        if kind in rule.get("always_review", []):
+            automerge, reason = False, f"{kind} updates of this image are always reviewed"
+        elif breaking:
+            automerge, reason = False, "release notes mention breaking changes"
+        elif breaking is None:
+            automerge = kind in rule.get("automerge", [])
+            reason = "no release notes; " + ("allowed" if automerge else "not allowed") + f" {kind} update"
+        else:
+            automerge, reason = True, "release notes mention no breaking changes"
         changes.append({
             "name": name, "old": f"{name}:{tag}@{digest}", "new": f"{name}:{new_tag}@{new_digest}",
             "old_tag": tag, "new_tag": new_tag, "version": new_parsed[2], "kind": kind,
-            "automerge": kind in rule.get("automerge", []),
+            "automerge": automerge, "reason": reason, "breaking": breaking or [],
         })
     if not changes:
         return None
@@ -200,13 +284,17 @@ def apply_plan(plan):
     app, branch = plan["app"], f"auto-update/{plan['app']}"
     title = f"{app}: {plan['old_version']} -> {plan['new_version']}"
     rows = "\n".join(
-        f"| `{c['name']}` | `{c['old_tag']}` | `{c['new_tag']}` | {c['kind']} | {'yes' if c['automerge'] else '**no**'} |"
+        f"| `{c['name']}` | `{c['old_tag']}` | `{c['new_tag']}` | {c['kind']} | "
+        f"{'yes' if c['automerge'] else '**no**'} | {c['reason']} |"
         for c in plan["changes"]
     )
+    flagged = "\n".join(f"- `{c['name']}` {line}" for c in plan["changes"] for line in c["breaking"])
     body = (
         f"Automated image update for `{app}`.\n\n"
-        "| Image | From | To | Kind | Auto-merge |\n|---|---|---|---|---|\n"
+        "| Image | From | To | Kind | Auto-merge | Why |\n|---|---|---|---|---|---|\n"
         f"{rows}\n\n"
+        + (f"### Release notes flagged\n\n{flagged}\n\n" if flagged else "")
+        + 
         f"`umbrel-app.yml` version: `{plan['old_version']}` -> `{plan['new_version']}`.\n"
         "Digests are the multi-arch index digests and include linux/amd64.\n"
     )
@@ -255,7 +343,9 @@ def main():
             print("  up to date")
             continue
         for c in plan["changes"]:
-            print(f"  {c['name']}: {c['old_tag']} -> {c['new_tag']} ({c['kind']}, automerge={c['automerge']})")
+            print(f"  {c['name']}: {c['old_tag']} -> {c['new_tag']} ({c['kind']}, automerge={c['automerge']}: {c['reason']})")
+            for line in c["breaking"][:5]:
+                print(f"    ! {line}")
         print(f"  version {plan['old_version']} -> {plan['new_version']}")
         if args.apply:
             apply_plan(plan)

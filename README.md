@@ -90,16 +90,28 @@ image:
   revision when only a secondary image changed (e.g. tailscale in qbittorrent),
 - opens a PR on branch `auto-update/<app>`.
 
-The PR is merged automatically when every change is an allowed kind for its
-image; otherwise it stays open with the `needs-review` label:
+The PR is merged automatically unless a change needs review; then it stays
+open with the `needs-review` label and you merge it yourself (no approval
+needed, just **Merge**). A change needs review when:
 
-| Image | Auto-merged | Needs review |
-|-------|-------------|--------------|
-| favonia/cloudflare-ddns, gitea/runner, docker (dind), tailscale | minor, patch | major |
-| linuxserver/qbittorrent | patch, linuxserver rebuild | minor, major |
-| registry.k8s.io/pause | all | — |
-| aaronleopold/stump | patch | minor, major (0.x minors can break) |
-| authelia/authelia | patch | minor, major (config format changes) |
+1. the upstream release notes for any version between the installed and the
+   new one mention a breaking change ("breaking change", `BREAKING`, ⚠,
+   "action required", "manual migration", "incompatible"); the matching lines
+   are quoted in the PR, or
+2. the image is listed as always reviewed for that kind of update, or
+3. the image has no usable release notes and the update kind is not in its
+   fallback list.
+
+| Image | Release notes from | Always reviewed | Fallback without notes |
+|-------|--------------------|-----------------|------------------------|
+| favonia/cloudflare-ddns | GitHub releases | — | minor, patch |
+| gitea/runner | gitea.com releases | — | minor, patch |
+| docker (dind) | moby/moby releases | — | minor, patch |
+| linuxserver/qbittorrent | qBittorrent releases | — | patch, rebuild |
+| tailscale | none (links only) | — | minor, patch |
+| registry.k8s.io/pause | none | — | all |
+| aaronleopold/stump | GitHub releases | — | patch |
+| authelia/authelia | GitHub releases | minor, major (config changes are announced in the blog, not the notes) | patch |
 
 Merged updates only make the update button appear in Umbrel; nothing is
 installed until you press it. Run `python3 .github/scripts/update_images.py`

@@ -1,24 +1,29 @@
 {
-  "_comment": "Rules for .github/scripts/update_images.py. 'tag' must have a named group 'v' (the upstream version, X.Y or X.Y.Z); other named groups are build numbers. 'automerge' lists the bump kinds merged without review: major, minor, patch, build. 'primary' is the image whose version becomes the app version; other images only bump the -N packaging revision.",
+  "_comment": "Rules for .github/scripts/update_images.py. 'tag': regex for image tags, named group 'v' = upstream version (X.Y or X.Y.Z), other named groups = build numbers. 'notes': where upstream release notes live (github owner/repo or gitea host/owner/repo, optional 'tag' regex for release tags); an update is auto-merged unless those notes mention a breaking change. 'always_review': bump kinds that always get a PR. 'automerge': bump kinds merged when no release notes are available. 'primary': the image whose version becomes the app version; other images only bump the -N packaging revision.",
   "images": {
     "favonia/cloudflare-ddns": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "favonia/cloudflare-ddns" },
       "automerge": ["minor", "patch"]
     },
     "gitea/runner": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "gitea": "gitea.com/gitea/runner" },
       "automerge": ["minor", "patch"]
     },
     "docker": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-dind$",
+      "notes": { "github": "moby/moby", "tag": "^docker-v(?P<v>\\d+\\.\\d+\\.\\d+)$" },
       "automerge": ["minor", "patch"]
     },
     "lscr.io/linuxserver/qbittorrent": {
       "lookup": "ghcr.io/linuxserver/qbittorrent",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)_v(?P<lt1>\\d+)\\.(?P<lt2>\\d+)\\.(?P<lt3>\\d+)-ls(?P<ls>\\d+)$",
+      "notes": { "github": "qbittorrent/qBittorrent", "tag": "^release-(?P<v>\\d+\\.\\d+\\.\\d+)$" },
       "automerge": ["patch", "build"]
     },
     "tailscale/tailscale": {
+      "_comment": "GitHub release notes only link to tailscale.com/changelog, so the semver fallback applies.",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
       "even_minor": true,
       "automerge": ["minor", "patch"]
@@ -29,10 +34,14 @@
     },
     "aaronleopold/stump": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "stumpapp/stump" },
       "automerge": ["patch"]
     },
     "authelia/authelia": {
+      "_comment": "Authelia announces config changes in its blog, not reliably in release notes (4.38.0 had none), so minor and major updates always get a PR.",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "authelia/authelia" },
+      "always_review": ["minor", "major"],
       "automerge": ["patch"]
     }
   },
