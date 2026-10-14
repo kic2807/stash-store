@@ -1,0 +1,23 @@
+version: "3.7"
+
+# No web UI, so there is no app_proxy service. The manifest port is only a
+# placeholder. Status, 2FA prompts and errors go to the Discord webhook.
+
+services:
+  server:
+    image: ghcr.io/kic2807/band-backup:2.4.0@sha256:de307b42ee57ab706dc1ff890e5e50bd8e5be77338153233971814bf83e48120
+    restart: on-failure
+    # Reaps the headless Chromium processes Playwright starts for BAND login.
+    init: true
+    environment:
+      DATA_DIR: /data
+      CONFIG_PATH: /data/config.yaml
+      TZ: Asia/Seoul
+    # BAND/Immich/Discord/Claude/Google settings and secrets come from the app
+    # data .env file; see .env.example.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # SQLite state, BAND session cookies, the Google service account key.
+      - ${APP_DATA_DIR}/data:/data

@@ -25,6 +25,7 @@ The apps show up under **Stash App Store**.
 | [stash-qbittorrent](stash-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
 | [stash-authelia](stash-authelia/README.md) | 4.39.28 | 30091 | SSO with passkeys: NPM forward auth + OIDC provider. | config files + secret files |
 | [stash-stump](stash-stump/README.md) | 0.1.10 | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
+| [stash-band-backup](stash-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
@@ -36,7 +37,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, gitea-act-runner, qbittorrent, stump)
+### `.env` apps (cloudflare-ddns, gitea-act-runner, qbittorrent, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -76,7 +77,8 @@ Configuration files under `data/config/` and one secret per file under
 4. **stash-authelia** → secrets, users, config → NPM `auth.` host → register a passkey.
 5. Official **Gitea** → **stash-gitea-act-runner** → `.env` with a runner token.
 6. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
-7. Protect apps with NPM forward auth / connect OIDC apps one by one.
+7. Official **Immich** → **stash-band-backup** → `.env` (Immich API key, BAND login).
+8. Protect apps with NPM forward auth / connect OIDC apps one by one.
 
 ## Automatic image updates
 
@@ -112,6 +114,9 @@ needed, just **Merge**). A change needs review when:
 | registry.k8s.io/pause | none | — | all |
 | aaronleopold/stump | GitHub releases | — | patch |
 | authelia/authelia | GitHub releases | minor, major (config changes are announced in the blog, not the notes) | patch |
+
+`stash-band-backup` is not part of this: its image is released by hand from
+the band-backup repo (see its README).
 
 Merged updates only make the update button appear in Umbrel; nothing is
 installed until you press it. Run `python3 .github/scripts/update_images.py`
