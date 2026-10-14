@@ -1,0 +1,25 @@
+version: "3.7"
+
+# No web UI, so there is no app_proxy service. The manifest port is only a
+# placeholder; opening the app from the Umbrel home screen shows nothing.
+
+services:
+  ddns:
+    image: favonia/cloudflare-ddns:1.17.1@sha256:5e61736b982b87d84a1120b4767c4deff0f2cc55ca3ee9dcb1dc58623039b5cb
+    # Host networking so the updater sees the host's real public IP stack
+    # (upstream's recommended setup; needed if IPv6 is ever enabled).
+    network_mode: host
+    user: "1000:1000"
+    read_only: true
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    restart: on-failure
+    environment:
+      PROXIED: "true"
+      IP6_PROVIDER: none
+    # CLOUDFLARE_API_TOKEN and DOMAINS come from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false

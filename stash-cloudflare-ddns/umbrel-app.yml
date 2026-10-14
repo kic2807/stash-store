@@ -1,0 +1,29 @@
+manifestVersion: 1
+id: stash-cloudflare-ddns
+category: networking
+name: Cloudflare DDNS
+version: "1.17.1"
+tagline: Keep Cloudflare DNS records pointed at this server's public IP
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cloudflare.svg
+description: >-
+  Background service with no web UI. Opening the app from the home screen does nothing; check the logs in the app's settings instead.
+
+
+  Before starting, create the .env file described in the store README (CLOUDFLARE_API_TOKEN, DOMAINS) in the app data folder, then restart the app.
+releaseNotes: ""
+
+developer: favonia
+website: https://github.com/favonia/cloudflare-ddns
+dependencies: []
+repo: https://github.com/favonia/cloudflare-ddns
+support: https://github.com/favonia/cloudflare-ddns/issues
+
+port: 30101
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/stash-store

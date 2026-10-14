@@ -1,0 +1,44 @@
+version: "3.7"
+
+# No web UI, so there is no app_proxy service. Check the runner's status in
+# Gitea (Site/Org/Repo settings -> Actions -> Runners) instead.
+
+services:
+  dind:
+    image: docker:29.9.0-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+    # Docker-in-Docker needs privileged mode to run job containers. This is an
+    # isolated daemon; the host Docker socket is never mounted.
+    privileged: true
+    restart: on-failure
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    # Listen on loopback only. The runner shares this network namespace, so it
+    # reaches the daemon at localhost; other containers on the Umbrel network
+    # cannot. No ports are published to the host.
+    command:
+      - dockerd
+      - --host=unix:///var/run/docker.sock
+      - --host=tcp://127.0.0.1:2375
+      - --tls=false
+    volumes:
+      # Image/layer cache for jobs, kept across restarts (excluded from backups).
+      - ${APP_DATA_DIR}/data/dind:/var/lib/docker
+
+  runner:
+    image: gitea/runner:5.0.0@sha256:328b8dad8de80a19dab6c5c61292c1d624cd3460c25a5c0067e95c11318657ca
+    network_mode: service:dind
+    restart: on-failure
+    depends_on:
+      - dind
+    environment:
+      DOCKER_HOST: tcp://localhost:2375
+      GITEA_RUNNER_NAME: umbrel_dind_runner
+    # GITEA_INSTANCE_URL and GITEA_RUNNER_REGISTRATION_TOKEN come from the app
+    # data .env file. The token is only used for the first registration.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # Registration state (.runner) lives in /data, so restarts and updates do
+      # not re-register.
+      - ${APP_DATA_DIR}/data/runner:/data
