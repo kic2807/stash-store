@@ -1,31 +1,48 @@
 version: "3.7"
 
-# qBittorrent shares the tailscale container's network namespace, so all
-# its traffic leaves through the Tailscale exit node set in .env.
-# The tailscale service therefore owns the IP and all published ports, and
-# app_proxy must target it (umbrelOS resolves APP_HOST to that container's IP).
+# All services share one network namespace owned by the tiny `net` container,
+# like a Kubernetes pod. tailscale and qbittorrent join it, so either can be
+# restarted without breaking the other (joining tailscale's own namespace left
+# qBittorrent on a dead network whenever tailscale restarted).
+# `net` owns the IP and published ports, so app_proxy targets it (umbrelOS
+# resolves APP_HOST to that container's IP).
+#
+# All qBittorrent traffic leaves through the Tailscale exit node set in .env.
+# The seeded qBittorrent config binds torrents to tailscale0, so if Tailscale
+# is down torrents stop instead of using the home connection.
 
 services:
   app_proxy:
     environment:
-      APP_HOST: stash-qbittorrent_tailscale_1
+      APP_HOST: stash-qbittorrent_net_1
       APP_PORT: 30024
       # Same as the official qBittorrent app: the WebUI API has its own login,
       # so API clients (mobile apps, browser extensions) can bypass Umbrel login.
       PROXY_AUTH_WHITELIST: "/api/*"
 
+  net:
+    image: registry.k8s.io/pause:3.10.2@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4
+    restart: on-failure
+    ports:
+      # BitTorrent listen port
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+
   tailscale:
     image: tailscale/tailscale:v1.104.1@sha256:87c55d6be56ad85b3d8bceca5f87f73de288c609131460dd1be1874c250cc41d
-    hostname: umbrel-qbit-node
+    network_mode: service:net
     restart: on-failure
-    # Kernel TUN mode is needed to route the other containers' traffic through
-    # the exit node.
+    depends_on:
+      - net
+    # Kernel TUN mode is needed to route qBittorrent's traffic through the
+    # exit node.
     cap_add:
       - NET_ADMIN
       - NET_RAW
     devices:
       - /dev/net/tun:/dev/net/tun
     environment:
+      TS_HOSTNAME: umbrel-qbit-node
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
       TS_ACCEPT_DNS: "true"
@@ -37,10 +54,6 @@ services:
         required: false
     volumes:
       - ${APP_DATA_DIR}/data/tailscale:/var/lib/tailscale
-    ports:
-      # BitTorrent listen port
-      - "6881:6881/tcp"
-      - "6881:6881/udp"
     # Health status only (docker ps). Not used as a start condition: before .env
     # exists the node is not logged in, and waiting on it would fail the install.
     healthcheck:
@@ -52,9 +65,10 @@ services:
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.2.4_v2.0.15-ls480@sha256:97333cc1ccf903e0bbcd8eb67e3332e4970e9c1ecabe145e499e9c0847ebcaed
-    network_mode: service:tailscale
+    network_mode: service:net
     restart: on-failure
     depends_on:
+      - net
       - tailscale
     environment:
       PUID: "1000"
@@ -66,4 +80,3 @@ services:
       - ${APP_DATA_DIR}/data/qbittorrent:/config
       # Same path as the official qBittorrent/Radarr/Sonarr/Jellyfin apps.
       - ${UMBREL_ROOT}/data/storage/downloads:/downloads
-

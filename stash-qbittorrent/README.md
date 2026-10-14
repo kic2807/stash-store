@@ -7,12 +7,16 @@ through a Tailscale exit node.
 
 | Service       | Image                              | Notes |
 |---------------|------------------------------------|-------|
-| `tailscale`   | `tailscale/tailscale`              | owns the network namespace and all ports; hostname `umbrel-qbit-node` |
-| `qbittorrent` | `lscr.io/linuxserver/qbittorrent`  | `network_mode: service:tailscale`, WebUI 30024, peers 6881 |
+| `net`         | `registry.k8s.io/pause`            | owns the shared network namespace, IP and published ports (does nothing else) |
+| `tailscale`   | `tailscale/tailscale`              | `network_mode: service:net`; node name `umbrel-qbit-node` |
+| `qbittorrent` | `lscr.io/linuxserver/qbittorrent`  | `network_mode: service:net`, WebUI 30024, peers 6881 |
+
+Because `net` owns the namespace, restarting `tailscale` or `qbittorrent`
+alone does not cut the other off.
 
 | Port  | Where | What |
 |-------|-------|------|
-| 30024 | Umbrel app URL (app_proxy → `tailscale:30024`) | qBittorrent WebUI, behind Umbrel login (`/api/*` whitelisted, it has its own login) |
+| 30024 | Umbrel app URL (app_proxy → `net:30024`) | qBittorrent WebUI, behind Umbrel login (`/api/*` whitelisted, it has its own login) |
 | 6881  | host, tcp+udp | BitTorrent (only useful if forwarded; normal peer traffic goes through the exit node) |
 
 Downloads go to Umbrel's shared Downloads folder, mounted at `/downloads`,
@@ -47,17 +51,18 @@ Persistent data under `~/umbrel/app-data/stash-qbittorrent/data/`:
 5. Open the app from the Umbrel home screen (qBittorrent WebUI). The first password is random;
    find it with `sudo docker logs stash-qbittorrent_qbittorrent_1 | grep -i password`.
    Then in Tools → Options:
-   - **Advanced → Network interface: `tailscale0`** (kill switch: if Tailscale
-     is down, qBittorrent stops instead of using the home connection)
-   - Downloads → Default save path: `/downloads` (keep it, the *arr apps expect it)
    - WebUI → change the password
+   - Check **Advanced → Network interface** is `tailscale0` (kill switch: if
+     Tailscale is down, torrents stop instead of using the home connection).
+     New installs get this from the seeded `data/qbittorrent/qBittorrent/qBittorrent.conf`.
+   - Check Downloads → Default save path is `/downloads` (the *arr apps expect it)
 
 ## Connecting Radarr / Sonarr / Prowlarr
 
-Download client → qBittorrent, host `stash-qbittorrent_tailscale_1`, port `30024`.
+Download client → qBittorrent, host `stash-qbittorrent_net_1`, port `30024`.
 
-## Known limitation
+## Kill switch
 
-If the `tailscale` container is restarted on its own, qBittorrent loses its
-network until it is restarted too. Restart the whole app from
-the Umbrel home screen instead of single containers.
+When the `tailscale` container stops, the shared namespace falls back to the
+normal Docker route. Only the `tailscale0` interface binding keeps torrents
+from using the home connection then, so do not change it.
