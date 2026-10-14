@@ -57,6 +57,7 @@ commands fail with `Unable to find image 'authelia:latest'`.
    sudo docker run --rm -u 1000:1000 -v $D/secrets:/secrets $IMG \
      authelia crypto rand --length 64 --charset alphanumeric \
      --file /secrets/jwt_secret,/secrets/session_secret,/secrets/storage_encryption_key,/secrets/oidc_hmac_secret
+   mkdir -p $D/secrets/oidc && chmod 700 $D/secrets $D/secrets/oidc   # rsa generate does not create it
    sudo docker run --rm -u 1000:1000 -v $D/secrets:/secrets $IMG \
      authelia crypto pair rsa generate --bits 2048 --directory /secrets/oidc
    ls -la $D/secrets $D/secrets/oidc     # files should be -rw------- umbrel
