@@ -209,7 +209,7 @@ Every protected domain also needs a matching rule in `access_control`
 For each app:
 
 1. Generate a client secret and its digest:
-   `sudo docker run --rm $IMG authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986`
+   `sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986`
    The plain secret goes into the app, the digest into `configuration.yml`.
 2. Copy the client block from Authelia's integration page for that app into
    `identity_providers.oidc.clients`, set the domain and the digest.
