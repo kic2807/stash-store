@@ -44,18 +44,16 @@ Secrets are passed as files (`AUTHELIA_*_FILE`), so they never appear in
 
 ## Setup
 
-All commands run on the Umbrel terminal. `IMG` saves typing:
-
-```sh
-IMG=authelia/authelia:4.39.28
-D=~/umbrel/app-data/stash-authelia/data
-```
+All commands run on the Umbrel terminal. Each block starts by setting `IMG` and
+`D`; run those lines again whenever you open a new terminal, otherwise the
+commands fail with `Unable to find image 'authelia:latest'`.
 
 1. **Install the app.** It keeps restarting until steps 2–4 are done; that is expected.
 
 2. **Secrets** (random values are written straight to files, never printed):
 
    ```sh
+   IMG=authelia/authelia:4.39.28; D=~/umbrel/app-data/stash-authelia/data
    sudo docker run --rm -u 1000:1000 -v $D/secrets:/secrets $IMG \
      authelia crypto rand --length 64 --charset alphanumeric \
      --file /secrets/jwt_secret,/secrets/session_secret,/secrets/storage_encryption_key,/secrets/oidc_hmac_secret
@@ -69,6 +67,7 @@ D=~/umbrel/app-data/stash-authelia/data
 3. **Users:** copy the example and add a password hash.
 
    ```sh
+   IMG=authelia/authelia:4.39.28; D=~/umbrel/app-data/stash-authelia/data
    sudo docker run --rm -it $IMG authelia crypto hash generate argon2   # prompts for the password
    nano $D/config/users_database.yml     # paste users_database.example.yml, set name/email/digest
    ```
@@ -79,6 +78,7 @@ D=~/umbrel/app-data/stash-authelia/data
    until then. Check it:
 
    ```sh
+   IMG=authelia/authelia:4.39.28; D=~/umbrel/app-data/stash-authelia/data
    sudo docker run --rm -u 1000:1000 -e X_AUTHELIA_CONFIG_FILTERS=template \
      -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
      -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
@@ -94,7 +94,7 @@ D=~/umbrel/app-data/stash-authelia/data
 6. **NPM portal host** (see below), then open `https://auth.<domain>`, log in with
    the password, go to **Settings → Security keys / Passkeys → Add**. Authelia
    asks for a one-time code first; read it with
-   `sudo tail -n 20 $D/db/notification.txt`. From then on use **Sign in with a passkey**.
+   `sudo tail -n 20 ~/umbrel/app-data/stash-authelia/data/db/notification.txt`. From then on use **Sign in with a passkey**.
 
 ## Nginx Proxy Manager
 
