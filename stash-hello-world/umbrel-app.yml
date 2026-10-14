@@ -4,7 +4,7 @@ name: Stash Hello World
 tagline: Replace this tagline with your app's tagline
 icon: https://svgur.com/i/mvA.svg
 category: Development
-version: "1.0.0"
+version: "1.0.1"
 port: 4000
 description: >-
   Add your app's description here.
@@ -23,7 +23,7 @@ gallery:
   - https://i.imgur.com/yyVG0Jb.jpeg
   - https://i.imgur.com/yyVG0Jb.jpeg
 releaseNotes: >-
-  Add what's new in the latest version of your app here.
+  Test: load environment variables from ${APP_DATA_DIR}/data/.env (STASH_TEST).
 dependencies: []
 path: ""
 defaultUsername: ""
