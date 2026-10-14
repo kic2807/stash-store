@@ -106,21 +106,48 @@ commands fail with `Unable to find image 'authelia:latest'`.
    chmod 600 ~/umbrel/app-data/stash-authelia/data/config/users_database.yml
    ```
 
-4. **Configuration:** paste `configuration.example.yml` into
-   `$D/config/configuration.yml` and replace `example.com` everywhere. Set up the
-   OIDC clients you need (see below) or delete the `identity_providers` block
-   until then. Check it:
+4. **Configuration** (`configuration.yml`).
 
-   ```sh
-   IMG=authelia/authelia:4.39.28; D=~/umbrel/app-data/stash-authelia/data
-   sudo docker run --rm -u 1000:1000 -e X_AUTHELIA_CONFIG_FILTERS=template \
-     -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
-     -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
-     -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
-     -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
-     -v $D/config:/config -v $D/secrets:/secrets:ro $IMG \
-     authelia validate-config --config /config/configuration.yml
-   ```
+   a. Download the example into place (it already has OIDC commented out, so it
+      starts as is):
+
+      ```sh
+      D=~/umbrel/app-data/stash-authelia/data
+      curl -fsSL https://raw.githubusercontent.com/kic2807/stash-store/main/stash-authelia/configuration.example.yml \
+        -o $D/config/configuration.yml
+      ```
+
+   b. Put your domain in (replace `mydomain.tld`; the file never leaves the server):
+
+      ```sh
+      sed -i 's/example\.com/mydomain.tld/g' $D/config/configuration.yml
+      grep -n 'mydomain.tld' $D/config/configuration.yml     # check the result
+      ```
+
+   c. Check the parts that depend on you with `nano $D/config/configuration.yml`:
+
+      | Key | What to check |
+      |-----|---------------|
+      | `session.cookies[0].authelia_url` | the Authelia portal, `https://auth.<domain>` |
+      | `session.cookies[0].default_redirection_url` | where to land after logging in at the portal directly |
+      | `access_control.rules` | one entry per subdomain protected through NPM forward auth; anything not listed is denied |
+      | `webauthn.display_name` | name shown in the passkey prompt |
+
+   d. Lock it and validate:
+
+      ```sh
+      chmod 600 $D/config/configuration.yml
+      sudo docker run --rm -u 1000:1000 -e X_AUTHELIA_CONFIG_FILTERS=template \
+        -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
+        -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
+        -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
+        -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
+        -v $D/config:/config -v $D/secrets:/secrets:ro authelia/authelia:4.39.28 \
+        authelia validate-config --config /config/configuration.yml
+      ```
+
+      `Configuration parsed and loaded successfully without errors.` means it is
+      fine. Otherwise the message names the key to fix.
 
 5. **Restart the app** and check `sudo docker logs --tail 20 stash-authelia_server_1`
    for `Startup complete`.
@@ -240,23 +267,50 @@ Every protected domain also needs a matching rule in `access_control`
 
 ## OIDC clients
 
-For each app:
+Apps that can log in through Authelia: **Immich, Gitea, RomM, Jellyfin** (SSO
+plugin) and **autobrr**. Radarr, Sonarr, Prowlarr, qBittorrent and NPM have no
+OIDC support; protect them with forward auth instead.
 
-1. Generate a client secret and its digest:
-   `sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986`
-   The plain secret goes into the app, the digest into `configuration.yml`.
-2. Copy the client block from Authelia's integration page for that app into
-   `identity_providers.oidc.clients`, set the domain and the digest.
-3. Restart Authelia, then configure the app with issuer
-   `https://auth.<domain>` (discovery: `https://auth.<domain>/.well-known/openid-configuration`),
-   the client ID and the plain secret.
+`configuration.yml` contains a commented-out block for each of them. To add
+the first app:
 
-| App | Authelia guide | Where in the app |
-|-----|----------------|------------------|
-| Immich | [immich](https://www.authelia.com/integration/openid-connect/clients/immich/) (example already in `configuration.example.yml`, includes `app.immich:///oauth-callback` for the mobile app) | Administration → Settings → Authentication → OAuth |
-| Gitea | [gitea](https://www.authelia.com/integration/openid-connect/clients/gitea/) | Site Administration → Identity & Access → Authentication Sources → Add (OAuth2, OpenID Connect) |
-| RomM | [romm](https://www.authelia.com/integration/openid-connect/clients/romm/) | `OIDC_*` environment variables of the RomM app |
-| Jellyfin | [jellyfin](https://www.authelia.com/integration/openid-connect/clients/jellyfin/) | install the SSO plugin (9p4/jellyfin-plugin-sso), then its settings page |
+1. Generate the client secret. It prints a `Random Password` (goes into the
+   app) and a `Digest` (goes into Authelia):
+
+   ```sh
+   sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 \
+     --variant sha512 --random --random.length 72 --random.charset rfc3986
+   ```
+
+2. `nano ~/umbrel/app-data/stash-authelia/data/config/configuration.yml`, go to the
+   bottom, and remove the leading `# ` from:
+   - the `identity_providers:`, `oidc:`, `jwks:` block and `clients:` lines (first time only)
+   - every line of that app's client block
+
+   Replace `$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST` with the Digest (keep the
+   single quotes). Keep the indentation exactly as it is.
+
+3. Run the `validate-config` command from setup step 4d, then restart the app.
+
+4. Configure the app with the plain secret:
+
+| App | Issuer / discovery | Client ID | Where | Notes |
+|-----|-------------------|-----------|-------|-------|
+| Immich | `https://auth.<domain>/.well-known/openid-configuration` | `immich` | Administration → Settings → Authentication → OAuth | mobile app login uses `app.immich:///oauth-callback` (already in the block) |
+| Gitea | same | `gitea` | Site Administration → Identity & Access → Authentication Sources → Add, type OAuth2, provider OpenID Connect | the source **name must be `authelia`** (it is in the redirect URI) |
+| RomM | `https://auth.<domain>` | `romm` | Umbrel → RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_PROVIDER=authelia`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI=https://romm.<domain>/api/oauth/openid`, `OIDC_SERVER_APPLICATION_URL=https://auth.<domain>` | names from the Authelia RomM guide |
+| Jellyfin | `https://auth.<domain>` | `jellyfin` | Dashboard → Plugins → install **SSO Authentication** (9p4) → add provider named `authelia` | the provider name is in the redirect URI |
+| autobrr | `https://auth.<domain>` | `autobrr` | `~/umbrel/app-data/autobrr/data/config.toml`: `oidcEnabled`, `oidcIssuer`, `oidcClientId`, `oidcClientSecret`, `oidcRedirectUrl = "https://autobrr.<domain>/api/auth/oidc/callback"` | not covered by Authelia's guides; check autobrr's logs |
+
+Authelia's per-app guides:
+[Immich](https://www.authelia.com/integration/openid-connect/clients/immich/),
+[Gitea](https://www.authelia.com/integration/openid-connect/clients/gitea/),
+[RomM](https://www.authelia.com/integration/openid-connect/clients/romm/),
+[Jellyfin](https://www.authelia.com/integration/openid-connect/clients/jellyfin/).
+
+The redirect URIs use `immich.`, `code.`, `romm.`, `jellyfin.` and `autobrr.`
+subdomains. If you use other names, change them in both the client block and
+the NPM proxy host.
 
 ## Passkeys and `two_factor`
 

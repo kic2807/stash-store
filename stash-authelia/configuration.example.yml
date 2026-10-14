@@ -99,42 +99,116 @@ notifier:
   filesystem:
     filename: '/var/lib/authelia/notification.txt'
 
-identity_providers:
-  oidc:
-    jwks:
-      - key_id: 'main'
-        algorithm: 'RS256'
-        use: 'sig'
-        key: {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
-    clients:
-      # Immich: Administration -> Settings -> Authentication -> OAuth
-      #   Issuer URL: https://auth.example.com/.well-known/openid-configuration
-      #   Client ID: immich, Client Secret: the plain secret for the digest below
-      - client_id: 'immich'
-        client_name: 'Immich'
-        # Digest of the client secret, NOT the secret itself. Generate with:
-        #   authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
-        client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
-        public: false
-        authorization_policy: 'one_factor'
-        require_pkce: true
-        pkce_challenge_method: 'S256'
-        redirect_uris:
-          - 'https://immich.example.com/auth/login'
-          - 'https://immich.example.com/user-settings'
-          - 'app.immich:///oauth-callback'
-        scopes:
-          - 'openid'
-          - 'profile'
-          - 'email'
-        response_types:
-          - 'code'
-        grant_types:
-          - 'authorization_code'
-        access_token_signed_response_alg: 'none'
-        userinfo_signed_response_alg: 'none'
-        token_endpoint_auth_method: 'client_secret_basic'
+# OpenID Connect provider. Commented out until you add the first app: Authelia
+# refuses to start with OIDC enabled and no valid client. To enable it, remove
+# the leading "# " from the identity_providers, oidc, jwks and clients lines
+# and from ONE client block, and put that client's secret digest in.
+#
+# Each client_secret is the digest of a random secret, never the secret itself:
+#   sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
+# "Random Password" goes into the app, "Digest" goes here.
+#
+# authorization_policy one_factor = a passkey alone is enough to log in.
 
-      # Add Gitea, RomM and Jellyfin the same way. Copy the client block from
-      # https://www.authelia.com/integration/openid-connect/ for each app (the
-      # redirect URIs and token_endpoint_auth_method differ per app).
+# identity_providers:
+#   oidc:
+#     jwks:
+#       - key_id: 'main'
+#         algorithm: 'RS256'
+#         use: 'sig'
+#         key: {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
+#     clients:
+#
+#       # Immich (https://www.authelia.com/integration/openid-connect/clients/immich/)
+#       # Immich: Administration -> Settings -> Authentication -> OAuth
+#       - client_id: 'immich'
+#         client_name: 'Immich'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: true
+#         pkce_challenge_method: 'S256'
+#         redirect_uris:
+#           - 'https://immich.example.com/auth/login'
+#           - 'https://immich.example.com/user-settings'
+#           - 'app.immich:///oauth-callback'
+#         scopes: ['openid', 'profile', 'email']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_basic'
+#
+#       # Gitea (https://www.authelia.com/integration/openid-connect/clients/gitea/)
+#       # Gitea: Site Administration -> Identity & Access -> Authentication Sources
+#       # The source name in Gitea must be "authelia" (it is part of the redirect URI).
+#       - client_id: 'gitea'
+#         client_name: 'Gitea'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: false
+#         pkce_challenge_method: ''
+#         redirect_uris:
+#           - 'https://code.example.com/user/oauth2/authelia/callback'
+#         scopes: ['openid', 'email', 'profile']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_basic'
+#
+#       # RomM (https://www.authelia.com/integration/openid-connect/clients/romm/)
+#       # RomM: OIDC_* environment variables (Umbrel app settings -> environment)
+#       - client_id: 'romm'
+#         client_name: 'RomM'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: false
+#         pkce_challenge_method: ''
+#         redirect_uris:
+#           - 'https://romm.example.com/api/oauth/openid'
+#         scopes: ['openid', 'profile', 'email']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_basic'
+#
+#       # Jellyfin with the SSO plugin (https://www.authelia.com/integration/openid-connect/clients/jellyfin/)
+#       # The provider name in the plugin must be "authelia" (part of the redirect URI).
+#       - client_id: 'jellyfin'
+#         client_name: 'Jellyfin'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: true
+#         pkce_challenge_method: 'S256'
+#         redirect_uris:
+#           - 'https://jellyfin.example.com/sso/OID/redirect/authelia'
+#         scopes: ['openid', 'profile', 'groups']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_post'
+#
+#       # autobrr: not in Authelia's integration guides; built from autobrr's
+#       # config.toml options (oidcEnabled, oidcIssuer, oidcClientId,
+#       # oidcClientSecret, oidcRedirectUrl). Check autobrr's logs on first use.
+#       - client_id: 'autobrr'
+#         client_name: 'autobrr'
+#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
+#         public: false
+#         authorization_policy: 'one_factor'
+#         require_pkce: false
+#         pkce_challenge_method: ''
+#         redirect_uris:
+#           - 'https://autobrr.example.com/api/auth/oidc/callback'
+#         scopes: ['openid', 'profile', 'email']
+#         response_types: ['code']
+#         grant_types: ['authorization_code']
+#         access_token_signed_response_alg: 'none'
+#         userinfo_signed_response_alg: 'none'
+#         token_endpoint_auth_method: 'client_secret_basic'
