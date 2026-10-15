@@ -64,6 +64,12 @@ access_control:
         - 'torrents.example.com'  # qBittorrent
       policy: 'one_factor'
 
+    # Not a real host: Authelia turns off all second-factor methods (and with
+    # them passkey/TOTP registration in Settings) unless at least one rule is
+    # two_factor. This rule only keeps them on; nothing is served on it.
+    - domain: 'mfa-enable.example.com'
+      policy: 'two_factor'
+
     # Apps that use Authelia through OIDC (Immich, RomM, Jellyfin, Stump) do not
     # need rules here; their policy is set per client below.
 

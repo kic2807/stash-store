@@ -271,8 +271,14 @@ them in both the client block and the Caddyfile.
 
 A passkey login counts as **one** factor
 ([`enable_passkey_login`](https://www.authelia.com/configuration/second-factor/webauthn/#enable_passkey_login)).
-That is why every rule and OIDC client here uses `one_factor`: one passkey
-login and you are in. A `two_factor` rule would ask for the password after the
+That is why every real rule and OIDC client here uses `one_factor`: one passkey
+login and you are in.
+
+Authelia hides passkey and TOTP registration (Settings → "Two-Factor
+Authentication") when no rule is `two_factor`, showing "no protected
+applications that require a second factor" instead. The example therefore
+keeps one `two_factor` rule for `mfa-enable.<domain>`, a name nothing is served
+on. Do not remove it. A `two_factor` rule would ask for the password after the
 passkey. `webauthn.experimental_enable_passkey_uv_two_factors` stays off:
 upstream marks it unsupported and plans to make it a startup error.
 
