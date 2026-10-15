@@ -1,0 +1,114 @@
+name: Build caddy-cloudflare
+
+# Builds ghcr.io/kic2807/caddy-cloudflare:<caddy>-cf<plugin> (linux/amd64)
+# when that tag does not exist yet. Runs before "Update images", which then
+# opens the stash-caddy PR for the new tag.
+
+on:
+  schedule:
+    # Daily at 03:53 KST (18:53 UTC), 30 minutes before update-images
+    - cron: "53 18 * * *"
+  push:
+    branches: [main]
+    paths:
+      - .github/caddy/**
+      - .github/scripts/caddy_versions.py
+      - .github/workflows/build-caddy.yml
+  workflow_dispatch:
+    inputs:
+      caddy_version:
+        description: "Caddy version (empty = newest)"
+        required: false
+      cloudflare_version:
+        description: "caddy-dns/cloudflare version (empty = newest)"
+        required: false
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-caddy
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/caddy-cloudflare
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick versions
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CADDY_VERSION: ${{ inputs.caddy_version }}
+          CLOUDFLARE_VERSION: ${{ inputs.cloudflare_version }}
+        run: python3 -I .github/scripts/caddy_versions.py | tee -a "$GITHUB_OUTPUT"
+
+      - name: Decide
+        id: go
+        run: |
+          if [ "${{ steps.v.outputs.exists }}" = "false" ] || [ "${{ inputs.force }}" = "true" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "${IMAGE}:${{ steps.v.outputs.tag }} already exists, nothing to do"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.go.outputs.build == 'true'
+
+      - name: Build and test
+        if: steps.go.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/caddy
+          platforms: linux/amd64
+          build-args: |
+            CADDY_VERSION=${{ steps.v.outputs.caddy }}
+            CLOUDFLARE_VERSION=${{ steps.v.outputs.cloudflare }}
+          load: true
+          tags: caddy-cloudflare:test
+
+      - name: Check the Cloudflare module is in the binary
+        if: steps.go.outputs.build == 'true'
+        run: |
+          docker run --rm caddy-cloudflare:test caddy version
+          docker run --rm caddy-cloudflare:test caddy list-modules | grep -x dns.providers.cloudflare
+
+      - uses: docker/login-action@v3
+        if: steps.go.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.go.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/caddy
+          platforms: linux/amd64
+          build-args: |
+            CADDY_VERSION=${{ steps.v.outputs.caddy }}
+            CLOUDFLARE_VERSION=${{ steps.v.outputs.cloudflare }}
+          # Provenance makes the pushed tag a multi-platform index, which is
+          # what update_images.py expects (index digest listing linux/amd64).
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Caddy ${{ steps.v.outputs.caddy }} with caddy-dns/cloudflare ${{ steps.v.outputs.cloudflare }}
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+            org.opencontainers.image.licenses=Apache-2.0
+
+      - name: Digest
+        if: steps.go.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"

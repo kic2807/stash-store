@@ -115,6 +115,24 @@ needed, just **Merge**). A change needs review when:
 | registry.k8s.io/pause | none | — | all |
 | aaronleopold/stump | GitHub releases | — | patch |
 | authelia/authelia | GitHub releases | minor, major (config changes are announced in the blog, not the notes) | patch |
+| ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |
+
+### caddy-cloudflare image
+
+The official Caddy image has no Cloudflare DNS module, so this repository
+builds its own: `.github/workflows/build-caddy.yml` runs daily at 03:53 KST
+(30 minutes before the image updates) and builds
+`ghcr.io/kic2807/caddy-cloudflare:<caddy>-cf<plugin>` (e.g. `2.11.7-cf0.2.4`,
+linux/amd64) from the official `caddy` and `caddy:<ver>-builder` images with
+`xcaddy` and [caddy-dns/cloudflare](https://github.com/caddy-dns/cloudflare)
+(`.github/caddy/Dockerfile`). It only builds when that tag does not exist yet,
+after checking that `dns.providers.cloudflare` is in the binary. The image
+update job then sees the new tag and opens the stash-caddy PR like for any
+other image; Caddy marks breaking changes in its release notes, so those PRs
+wait for review.
+
+Rebuild by hand: Actions → Build caddy-cloudflare → Run workflow (optionally
+pin versions; tick *force* to overwrite an existing tag).
 
 `stash-band-backup` is not part of this: its image is released by hand from
 the band-backup repo (see its README).

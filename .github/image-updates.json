@@ -43,6 +43,13 @@
       "notes": { "github": "authelia/authelia" },
       "always_review": ["minor", "major"],
       "automerge": ["patch"]
+    },
+    "ghcr.io/kic2807/caddy-cloudflare": {
+      "_comment": "Built by .github/workflows/build-caddy.yml. Tag <caddy>-cf<caddy-dns/cloudflare>; a plugin-only change is a 'build' bump. Caddy flags breaking changes in its release notes.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-cf(?P<cf1>\\d+)\\.(?P<cf2>\\d+)\\.(?P<cf3>\\d+)$",
+      "notes": { "github": "caddyserver/caddy" },
+      "always_review": ["major"],
+      "automerge": ["patch", "build"]
     }
   },
   "apps": {
