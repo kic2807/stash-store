@@ -6,7 +6,7 @@ sent to [Pocket ID](../stash-pocket-id/README.md), sign in with a passkey, and
 come back.
 
 Protects the apps that have no single sign-on of their own: Radarr
-(`movies.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`torrents.`).
+(`movies.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`download.`).
 
 It is opened at `https://login.<domain>:30443` through [stash-caddy](../stash-caddy/README.md),
 like the private hosts (LAN or Tailscale only).

@@ -88,8 +88,8 @@
 	# 	import tinyauth
 	# 	reverse_proxy prowlarr_server_1:9696
 	# }
-	# @torrents host torrents.example.com
-	# handle @torrents {
+	# @download host download.example.com
+	# handle @download {
 	# 	import private
 	# 	import tinyauth
 	# 	reverse_proxy stash-qbittorrent_net_1:30024

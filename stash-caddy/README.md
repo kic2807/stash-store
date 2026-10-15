@@ -106,7 +106,7 @@ need an app restart instead.
 The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
 `LAN_CIDR` or is `10.21.0.1` (see "What Caddy sees" below). That only works if
 outside clients reach Caddy with their real address. If they arrived as a
-gateway address instead, outside requests could look like local ones. **Do not enable movies/shows/search/torrents
+gateway address instead, outside requests could look like local ones. **Do not enable movies/shows/search/download
 until all three checks pass.** Tinyauth (Pocket ID passkey sign-in) still
 protects them if this check ever fails, but it must not be the only protection.
 
@@ -248,7 +248,7 @@ Alternatives not used (kept for reference):
 | `movies.` | `radarr_server_1:7878` | private + Tinyauth |
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `search.` | `prowlarr_server_1:9696` | private + Tinyauth |
-| `torrents.` | `stash-qbittorrent_net_1:30024` | private + Tinyauth |
+| `download.` | `stash-qbittorrent_net_1:30024` | private + Tinyauth |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked
