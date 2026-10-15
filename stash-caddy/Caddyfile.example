@@ -6,7 +6,6 @@
 # (APP_HOST:APP_PORT). Caddy talks to them directly over umbrel_main_network,
 # so Umbrel's own login is not in the way. Check them after installing each
 # app (README → "Check container names").
-
 {
 	email {env.ACME_EMAIL}
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
