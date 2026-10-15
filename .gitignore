@@ -1,8 +1,6 @@
 .DS_Store
 .env
-# Authelia real config and secrets (only *.example.yml belong in git)
-configuration.yml
-users_database.yml
+# Secret files kept in app data folders
 **/data/secrets/*
 !**/data/secrets/.gitkeep
 *.pem
