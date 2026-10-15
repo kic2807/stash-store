@@ -58,9 +58,10 @@ the next restart.
 3. Restart the app from the home screen (right-click → Restart).
 
 `env_file` only sets container environment variables; it cannot fill in
-`${...}` inside `docker-compose.yml`. Values that are part of a longer setting
-(for example the exit node in `TS_EXTRA_ARGS`) go into `.env` as the whole
-value.
+`${...}` inside `docker-compose.yml`. A value needed inside a command is read
+at runtime instead (for example qBittorrent's `EXIT_NODE`, used by a shell
+wrapper as `$$EXIT_NODE`). A variable set under `environment:` in the compose
+file wins over the same name in `.env`.
 
 App updates replace only `docker-compose.yml`, templates, `exports.sh` and
 `hooks/`, so `.env` and everything else under `data/` survive updates.

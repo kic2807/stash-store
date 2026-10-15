@@ -2,19 +2,19 @@ manifestVersion: 1
 id: things-qbittorrent
 category: networking
 name: qBittorrent
-version: "5.2.4-2"
+version: "5.2.4-3"
 tagline: qBittorrent behind a Tailscale exit node
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg
 description: >-
-  qBittorrent. All torrent traffic leaves through a Tailscale exit node.
+  qBittorrent. All torrent traffic leaves through a Tailscale exit node, given by its MagicDNS name. qBittorrent starts only once that exit node is online.
 
 
-  Before starting, create the .env file described in the store README (TS_AUTHKEY, TS_EXTRA_ARGS) in the app data folder, then restart the app.
+  Before starting, create the .env file described in the store README (TS_AUTHKEY, EXIT_NODE) in the app data folder, then restart the app.
 
 
   Torrents are bound to the tailscale0 interface on new installs, so they stop instead of leaking if the VPN drops. Keep Tools -> Options -> Advanced -> Network interface set to tailscale0.
 releaseNotes: >-
-  Renamed from "qBittorrent (VPN)" to "qBittorrent".
+  Exit node by MagicDNS name: set EXIT_NODE in .env (TS_EXTRA_ARGS is no longer used). qBittorrent now starts only after the exit node is online.
 
 developer: qBittorrent / Tailscale
 website: https://www.qbittorrent.org
