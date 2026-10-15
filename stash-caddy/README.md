@@ -103,9 +103,9 @@ need an app restart instead.
 ## Client IP test (required)
 
 The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
-`LAN_CIDR` or Tailscale's `100.64.0.0/10`. That only works if Caddy sees the
-real client address. If it saw Docker's gateway (172.x) instead, outside
-requests could look like LAN ones. **Do not enable films/shows/search/torrents
+`LAN_CIDR` or is `10.21.0.1` (see "What Caddy sees" below). That only works if
+outside clients reach Caddy with their real address. If they arrived as a
+gateway address instead, outside requests could look like local ones. **Do not enable films/shows/search/torrents
 until all three checks pass.** Authelia (`one_factor`, passkey login) still
 protects them if this check ever fails, but it must not be the only protection.
 
@@ -119,6 +119,7 @@ with the address Caddy sees.
    ```
 
    Expected: `allowed, you are 192.168.x.y` (your PC's LAN address).
+   *Not tested yet.*
 
 2. **From outside** (a laptop on the phone's LTE hotspot, Wi-Fi off):
 
@@ -144,6 +145,27 @@ router's address. Then do not open the private hosts; see "If Caddy sees
 
 After passing: uncomment the private hosts, remove the `ipcheck` block,
 validate, reload. Repeat the test after umbrelOS updates.
+
+## What Caddy sees (tested 2026-10-15)
+
+| Client | `remote_ip` in Caddy's log | `(private)` |
+|--------|----------------------------|-------------|
+| Outside (LTE, through the router's 443 → 30443) | the client's real public address | blocked |
+| Tailscale client → Umbrel's Tailscale address `:30443` | `10.21.0.1` | allowed |
+| The Umbrel host itself (`127.0.0.1:30443`) | `10.21.0.1` | allowed |
+| LAN client → Umbrel LAN address `:30443` | not tested yet (expected: the client's LAN address) | allowed if in `LAN_CIDR` |
+
+`10.21.0.1` is the `umbrel_main_network` gateway (fixed in umbrelOS,
+`app-environment.ts`). Tailscale clients show up as it because the official
+Tailscale app runs tailscaled in kernel mode on the host network: packets
+forwarded from `tailscale0` (here: to the Caddy container) get Tailscale's
+subnet-route mark and are masqueraded (`AddSNATRule` in tailscale's
+`util/linuxfw`). Turning that off (`tailscale set --snat-subnet-routes=false`)
+would show the real `100.x` address but also changes all forwarded tailnet
+traffic, including the Umbrel's exit node use, so it is not done.
+
+Consequence: `(private)` cannot tell Tailscale clients from processes on the
+Umbrel itself; both are trusted. Authelia still asks for a login.
 
 ## If Caddy sees 172.x
 
@@ -189,11 +211,12 @@ Authelia's session cookie and rules ignore the port.
 DNS for the private hosts: a DNS-only (grey cloud) record pointing at the
 Umbrel's LAN address. Never proxy them through Cloudflare (see below).
 
-From Tailscale, how the client reaches that address (a subnet route on the
-Umbrel, or the Umbrel's Tailscale address in a hosts entry) decides which
-source address Caddy sees, and it must be in `LAN_CIDR` or `100.64.0.0/10`.
-Not tested yet: open `https://ipcheck.<domain>:30443` from a Tailscale client
-the way you plan to use it and check the answer before relying on it.
+From Tailscale, the client has to reach Caddy on the Umbrel's Tailscale
+address (`sudo docker exec tailscale_web_1 tailscale ip -4`), e.g. with a
+hosts entry `100.x.y.z films.<domain>` on that device. This path was tested
+with `--resolve` and arrives as `10.21.0.1`, which `(private)` allows.
+Do not expose Caddy with Tailscale Funnel: Funnel requests would arrive the
+same way and be allowed.
 
 Alternatives not used (kept for reference):
 

@@ -55,7 +55,7 @@ access_control:
   default_policy: 'deny'
   rules:
     # Private hosts behind Caddy forward_auth (stash-caddy Caddyfile). Caddy
-    # already limits them to LAN/Tailscale; a passkey login is enough.
+    # already limits them to LAN and Tailscale; a passkey login is enough.
     # Opened as https://<name>.example.com:30443 (the port does not matter here).
     - domain:
         - 'films.example.com'     # Radarr

@@ -20,11 +20,15 @@
 	}
 }
 
-# Only LAN and Tailscale clients. Uses LAN_CIDR from .env instead of
-# private_ranges, which would also let in 172.16.0.0/12 (Docker's own
-# networks) if a request ever reached Caddy through Docker's userland proxy.
+# Only LAN and Tailscale clients (README → "Client IP test").
+# - LAN_CIDR (.env): LAN clients keep their own address.
+# - 10.21.0.1: the umbrel_main_network gateway. Tailscale clients arrive with
+#   this address because the Umbrel Tailscale app masquerades traffic it
+#   forwards from tailscale0; requests from the Umbrel host itself look the
+#   same. Outside clients keep their real address (tested), so they never match.
+# Not private_ranges: it would let in all of 10/8, 172.16/12 and 192.168/16.
 (private) {
-	@outside not remote_ip {$LAN_CIDR} 100.64.0.0/10
+	@outside not remote_ip {$LAN_CIDR} 10.21.0.1/32
 	abort @outside
 }
 
