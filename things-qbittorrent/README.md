@@ -141,6 +141,9 @@ home connection. Do not change it.
 
 ### Test that downloads stop
 
+Tested 2026-10-16 with a Mullvad exit node: downloads stopped while
+`tailscale` was down and resumed after the restart.
+
 1. Start a legal test torrent (e.g. a Linux ISO) and let it download.
 2. Check the address torrents use (the same interface binding):
 
