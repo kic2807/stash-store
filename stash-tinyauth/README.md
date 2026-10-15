@@ -8,7 +8,8 @@ come back.
 Protects the apps that have no single sign-on of their own: Radarr
 (`films.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`torrents.`).
 
-It is opened at `https://login.<domain>` through [stash-caddy](../stash-caddy/README.md).
+It is opened at `https://login.<domain>:30443` through [stash-caddy](../stash-caddy/README.md),
+like the private hosts (LAN or Tailscale only).
 There is no Umbrel home-screen UI: the manifest port 30106 is a placeholder.
 
 ## How it is set up here
@@ -25,6 +26,14 @@ There is no Umbrel home-screen UI: the manifest port 30106 is a placeholder.
   `https://id.<domain>`.
 - The session cookie is set for `<domain>` (taken from `TINYAUTH_APPURL`), so
   one sign-in covers all private hosts.
+- **`TINYAUTH_APPURL` carries the `:30443` port.** After sign-in Tinyauth only
+  returns to an address it considers safe (`isRedirectSafe`): it compares the
+  port first, and only on a matching port falls back to "any subdomain of the
+  cookie domain". With `https://login.<domain>` (no port) the return address
+  `https://films.<domain>:30443/` fails with *port mismatch* and you end up on
+  Tinyauth's own `/logout` page. Hence `login.<domain>` is a private host too:
+  a DNS-only record pointing at the Umbrel's Tailscale address, not in
+  cloudflare-ddns (Cloudflare cannot proxy port 30443 anyway).
 
 ## Files
 
@@ -37,7 +46,7 @@ Pocket ID must be set up first (admin account, `admins` group).
 
 1. **Pocket ID client:** in Pocket ID, Administration → OIDC Clients → Add:
    - Name: `Tinyauth`
-   - Callback URL: `https://login.<domain>/api/oauth/callback/pocketid`
+   - Callback URL: `https://login.<domain>:30443/api/oauth/callback/pocketid`
    - Access tab: group `admins`
 
    Keep the page open for the client ID and secret.
@@ -48,11 +57,11 @@ Pocket ID must be set up first (admin account, `admins` group).
    DOMAIN=<your-domain>
    D=~/umbrel/app-data/stash-tinyauth/data
    cat > $D/.env <<EOF2
-   TINYAUTH_APPURL=https://login.$DOMAIN
+   TINYAUTH_APPURL=https://login.$DOMAIN:30443
    TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID=<client id>
    TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTSECRET=<client secret>
    TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL=https://id.$DOMAIN/authorize
-   TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL=https://login.$DOMAIN/api/oauth/callback/pocketid
+   TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL=https://login.$DOMAIN:30443/api/oauth/callback/pocketid
    EOF2
    chmod 600 $D/.env
    ```

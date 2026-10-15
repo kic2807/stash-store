@@ -9,7 +9,7 @@ description: >-
   Tinyauth is a small forward-auth server. Caddy (stash-caddy) asks it before passing a request to Radarr, Sonarr, Prowlarr or qBittorrent; Tinyauth sends visitors to Pocket ID (stash-pocket-id) to sign in with a passkey and lets them through afterwards.
 
 
-  Opening the app from the home screen does nothing: Tinyauth only works at its own address (https://login.<your domain>) served by stash-caddy. Install and set up Pocket ID first, then create the .env file described in the store README and restart the app.
+  Opening the app from the home screen does nothing: Tinyauth only works at its own address (https://login.<your domain>:30443) served by stash-caddy. Install and set up Pocket ID first, then create the .env file described in the store README and restart the app.
 releaseNotes: ""
 
 developer: Tinyauth

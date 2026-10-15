@@ -26,8 +26,8 @@ Use one place only. To see the list in use without printing the token:
 sudo docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' stash-cloudflare-ddns_ddns_1 | grep '^DOMAINS='
 ```
 
-`DOMAINS` holds the **public** hosts only (Pocket ID `id.`, Tinyauth `login.`,
-`photos.`, `movies.`, …). The private hosts are separate DNS-only records (see
+`DOMAINS` holds the **public** hosts only (Pocket ID `id.`, `photos.`,
+`movies.`, …; Tinyauth's `login.` is private). The private hosts are separate DNS-only records (see
 stash-caddy README). Add a hostname here before opening it in a browser, or
 the router may cache "does not exist" for a while.
 

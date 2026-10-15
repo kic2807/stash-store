@@ -240,7 +240,7 @@ Alternatives not used (kept for reference):
 | Host | Target | Access |
 |------|--------|--------|
 | `id.` | `stash-pocket-id_server_1:1411` | public (Pocket ID) |
-| `login.` | `stash-tinyauth_server_1:3000` | public (Tinyauth) |
+| `login.` | `stash-tinyauth_server_1:3000` | Tinyauth; opened on `:30443` from LAN/Tailscale (DNS-only record, like the private hosts) |
 | `photos.` | `immich_server_1:2283` | public, Immich login / OIDC |
 | `movies.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
 | `games.` | `romm_server_1:8080` | public, RomM login / OIDC |

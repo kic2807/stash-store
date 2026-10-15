@@ -77,7 +77,7 @@ app gets those plus:
 
 | App | Callback URL(s) | Where in the app |
 |-----|-----------------|------------------|
-| Tinyauth | `https://login.<domain>/api/oauth/callback/pocketid` | `stash-tinyauth` `.env` (see its README) |
+| Tinyauth | `https://login.<domain>:30443/api/oauth/callback/pocketid` | `stash-tinyauth` `.env` (see its README) |
 | Immich | `https://photos.<domain>/auth/login`, `https://photos.<domain>/user-settings`, `app.immich:///oauth-callback` | Administration → Settings → Authentication → OAuth |
 | Jellyfin | `https://movies.<domain>/sso/OID/redirect/pocketid` | Dashboard → Plugins → **SSO Authentication** (9p4) → provider named `pocketid` |
 | RomM | `https://games.<domain>/api/oauth/openid` | RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI` (the callback), `OIDC_SERVER_APPLICATION_URL=https://id.<domain>`; check RomM's OIDC docs for `OIDC_PROVIDER` |
