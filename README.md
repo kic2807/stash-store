@@ -1,7 +1,9 @@
-# Stash — Umbrel Community App Store
+# Haus Things — Umbrel Community App Store
 
 Custom apps for umbrelOS 2.0 that are not in the official Umbrel App Store.
-Store id `stash`; every app id starts with `stash-`.
+Store id `stash`; every app id starts with `stash-`. (The store was renamed
+to Haus Things; the id stays `stash`, because umbrelOS requires app ids to
+start with the store id and changing it would mean reinstalling every app.)
 
 This repository is public. **No secrets, domains, IPs or account details are
 committed.** Each app reads them from files you create on the Umbrel server.
@@ -14,7 +16,7 @@ umbrelOS → App Store → `⋯` (top right) → **Community App Stores** → ad
 https://github.com/kic2807/stash-store
 ```
 
-The apps show up under **Stash App Store**.
+The apps show up under **Haus Things App Store**.
 
 ## Apps
 
