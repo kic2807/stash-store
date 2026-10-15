@@ -7,7 +7,9 @@
 # so Umbrel's own login is not in the way. Check them after installing each
 # app (README → "Check container names").
 {
-	email {env.ACME_EMAIL}
+	# No email: Let's Encrypt only (it no longer sends expiry mails, and an
+	# account email is optional). With "email you@example.org" here, Caddy
+	# also falls back to ZeroSSL when Let's Encrypt fails.
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 }
 

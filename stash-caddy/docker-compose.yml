@@ -27,7 +27,7 @@ services:
       - "0.0.0.0:30443:443/udp"
     environment:
       TZ: Asia/Seoul
-    # CLOUDFLARE_API_TOKEN, ACME_EMAIL, LAN_CIDR come from the app data .env file.
+    # CLOUDFLARE_API_TOKEN and LAN_CIDR come from the app data .env file.
     env_file:
       - path: ${APP_DATA_DIR}/data/.env
         required: false

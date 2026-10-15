@@ -25,7 +25,7 @@ Everything lives in `~/umbrel/app-data/stash-caddy/data/`:
 | `etc/Caddyfile` | `/etc/caddy/Caddyfile` (read-only) | from `Caddyfile.example` (not in git) |
 | `caddy/` | `/data` | certificates and ACME account. **Keep it**: losing it means new certificates (Let's Encrypt rate limits) |
 | `config/` | `/config` | Caddy's autosaved config |
-| `.env` | env | `CLOUDFLARE_API_TOKEN`, `ACME_EMAIL`, `LAN_CIDR` |
+| `.env` | env | `CLOUDFLARE_API_TOKEN`, `LAN_CIDR` |
 
 The Caddyfile is mounted as the `etc/` directory, not as a single file: if a
 single-file mount source is missing, Docker creates a directory in its place.
