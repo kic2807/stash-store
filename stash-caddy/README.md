@@ -209,22 +209,32 @@ source), so `https://films.<domain>` without the port would reach the Umbrel
 dashboard instead of Caddy. The wildcard certificate is valid on any port, and
 Tinyauth's session cookie (set for `<domain>`) is sent on any port.
 
-DNS for the private hosts: a DNS-only (grey cloud) record pointing at the
-Umbrel's LAN address. Never proxy them through Cloudflare (see below).
+DNS for the private hosts: DNS-only (grey cloud) A records in Cloudflare,
+added by hand (not in cloudflare-ddns, which would overwrite them with the WAN
+address), pointing at the Umbrel's **Tailscale address**
+(`sudo docker exec tailscale_web_1 tailscale ip -4`). They then work on any
+device with Tailscale on, at home or away; the address is only reachable inside
+the tailnet. Never proxy them through Cloudflare (see below).
 
-From Tailscale, the client has to reach Caddy on the Umbrel's Tailscale
-address (`sudo docker exec tailscale_web_1 tailscale ip -4`), e.g. with a
-hosts entry `100.x.y.z films.<domain>` on that device. This path was tested
-with `--resolve` and arrives as `10.21.0.1`, which `(private)` allows.
-Do not expose Caddy with Tailscale Funnel: Funnel requests would arrive the
-same way and be allowed.
+Tested path: Tailscale client → Umbrel Tailscale address `:30443` arrives as
+`10.21.0.1`, which `(private)` allows. Do not expose Caddy with Tailscale
+Funnel: Funnel requests would arrive the same way and be allowed.
+
+Add a DNS record **before** opening a new name. Opening it first makes the
+router's DNS cache "does not exist" (NXDOMAIN) for up to the zone's negative
+TTL (about 30 minutes); `nslookup <name> 1.1.1.1` shows whether the record is
+already live.
 
 Alternatives not used (kept for reference):
 
 - point the private hosts at the WAN address and let the router hairpin the
   traffic back; the source address Caddy then sees would have to pass the
   client IP test,
-- a router rule on the LAN side that redirects `<umbrel-lan-ip>:443` to `:30443`.
+- a router rule on the LAN side that redirects `<umbrel-lan-ip>:443` to `:30443`
+  (LAN only),
+- a helper container that adds a firewall rule redirecting `tailscale0:443` to
+  30443 on every start (system files are reset on reboot, so it cannot be a
+  one-time change); hides Umbrel's own HTTPS dashboard on the Tailscale address.
 
 ## Hosts
 

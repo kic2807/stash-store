@@ -18,6 +18,19 @@ Cloudflare DNS records pointed at this server's public IPv4 address
 
 3. Restart the app from the home screen.
 
+Instead of `.env`, `CLOUDFLARE_API_TOKEN` and `DOMAINS` can be set in the app's
+settings (umbrelOS 2.0 → right-click → Settings → environment variables).
+Use one place only. To see the list in use without printing the token:
+
+```sh
+sudo docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' stash-cloudflare-ddns_ddns_1 | grep '^DOMAINS='
+```
+
+`DOMAINS` holds the **public** hosts only (Pocket ID `id.`, Tinyauth `login.`,
+`photos.`, `movies.`, …). The private hosts are separate DNS-only records (see
+stash-caddy README). Add a hostname here before opening it in a browser, or
+the router may cache "does not exist" for a while.
+
 ## Check
 
 ```sh
