@@ -234,6 +234,22 @@ the first app:
    Replace `$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST` with the Digest (keep the
    single quotes). Keep the indentation exactly as it is.
 
+   First time only, replace `SIGNING_KEY_TEMPLATE` in the `jwks` block with
+   this exact text (it reads `secrets/oidc/private.pem`):
+
+   ```
+   {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
+   ```
+
+   or with sed:
+
+   ```sh
+   sed -i 's#SIGNING_KEY_TEMPLATE#{{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}#' \
+     ~/umbrel/app-data/stash-authelia/data/config/configuration.yml
+   ```
+
+   Never put `{{ ... }}` anywhere else in the file, comments included.
+
 3. Run the `validate-config` command from setup step 4d, then restart the app.
 
 4. Configure the app with the plain secret:

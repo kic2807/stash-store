@@ -31,10 +31,24 @@ jobs:
             openssl rand -hex 32 > "secrets/$f"
           done
           openssl genrsa -out secrets/oidc/private.pem 2048
-          docker run --rm -e X_AUTHELIA_CONFIG_FILTERS=template \
-            -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
-            -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
-            -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
-            -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
-            -v "$PWD/cfg:/config" -v "$PWD/secrets:/secrets:ro" "$image" \
-            authelia validate-config --config /config/configuration.yml
+          validate() {
+            docker run --rm -e X_AUTHELIA_CONFIG_FILTERS=template \
+              -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
+              -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
+              -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
+              -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
+              -v "$PWD/cfg:/config" -v "$PWD/secrets:/secrets:ro" "$image" \
+              authelia validate-config --config /config/configuration.yml
+          }
+          echo "== as shipped (OIDC commented out)"
+          validate
+
+          echo "== OIDC on: identity_providers + Immich client uncommented, as in the README"
+          digest=$(docker run --rm "$image" authelia crypto hash generate pbkdf2 --variant sha512 \
+            --random --random.length 72 --random.charset rfc3986 | sed -n 's/^Digest: //p')
+          awk '/^# identity_providers:/{on=1} /^#       # RomM/{on=0} on{sub(/^# ?/,"")} {print}' \
+            stash-authelia/configuration.example.yml > cfg/configuration.yml
+          sed -i 's#SIGNING_KEY_TEMPLATE#{{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}#' cfg/configuration.yml
+          sed -i "s#\$pbkdf2-sha512\$310000\$REPLACE_WITH_DIGEST#${digest}#" cfg/configuration.yml
+          sed -n '/^identity_providers:/,/^#/p' cfg/configuration.yml | grep -v -E 'client_secret|BEGIN|END|^ {10}[A-Za-z0-9+/=]+$' | head -30
+          validate

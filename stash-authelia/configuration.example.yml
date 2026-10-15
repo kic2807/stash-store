@@ -97,6 +97,9 @@ notifier:
 # refuses to start with OIDC enabled and no valid client. To enable it, remove
 # the leading "# " from the identity_providers, oidc, jwks and clients lines
 # and from ONE client block, and put that client's secret digest in.
+# SIGNING_KEY_TEMPLATE stands for the template that reads the signing key; the
+# README has the exact text (it cannot be written here, not even in a comment,
+# because the template filter evaluates the whole file).
 #
 # Each client_secret is the digest of a random secret, never the secret itself:
 #   sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
@@ -110,7 +113,7 @@ notifier:
 #       - key_id: 'main'
 #         algorithm: 'RS256'
 #         use: 'sig'
-#         key: {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
+#         key: SIGNING_KEY_TEMPLATE
 #     clients:
 #
 #       # Immich (https://www.authelia.com/integration/openid-connect/clients/immich/)
