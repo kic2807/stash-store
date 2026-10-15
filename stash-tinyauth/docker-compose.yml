@@ -1,0 +1,41 @@
+version: "3.7"
+
+# No app_proxy: Tinyauth only works at its own https://login.<domain> address
+# (its session cookie is set for <domain>), which Caddy serves. The manifest
+# port is only a placeholder; opening the app from the home screen shows nothing.
+
+services:
+  server:
+    image: ghcr.io/tinyauthapp/tinyauth:v5.2.0@sha256:220aa235c76393a73fece831d7ba967b8698d3907fd8e3c4c952f699c7b142a5
+    restart: on-failure
+    user: "1000:1000"
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: Asia/Seoul
+      # No Docker socket here, so no container labels: access rules come from env.
+      TINYAUTH_LABELPROVIDER: none
+      TINYAUTH_DATABASE_PATH: /data/tinyauth.db
+      TINYAUTH_RESOURCES_PATH: /data/resources
+      TINYAUTH_OIDC_PRIVATEKEYPATH: /data/oidc/tinyauth_oidc_key
+      TINYAUTH_OIDC_PUBLICKEYPATH: /data/oidc/tinyauth_oidc_key.pub
+      TINYAUTH_ANALYTICS_ENABLED: "false"
+      TINYAUTH_AUTH_SECURECOOKIE: "true"
+      # Sign in through Pocket ID only (no local users), and go there directly.
+      TINYAUTH_OAUTH_AUTOREDIRECT: pocketid
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME: Pocket ID
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_SCOPES: openid email profile groups
+      # Server-to-server calls go to Pocket ID inside Docker, not through the
+      # public address (the Umbrel cannot reach its own WAN address).
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL: http://stash-pocket-id_server_1:1411/api/oidc/token
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL: http://stash-pocket-id_server_1:1411/api/oidc/userinfo
+    # TINYAUTH_APPURL, the Pocket ID client ID/secret and the browser-facing
+    # URLs come from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # Session database and OIDC keys
+      - ${APP_DATA_DIR}/data:/data

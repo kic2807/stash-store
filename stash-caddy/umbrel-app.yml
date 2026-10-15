@@ -3,7 +3,7 @@ id: stash-caddy
 category: networking
 name: Caddy
 version: "2.11.7-1"
-tagline: Reverse proxy with a wildcard certificate and Authelia forward auth
+tagline: Reverse proxy with a wildcard certificate and forward auth
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg
 description: >-
   Background service with no web UI. Opening the app from the home screen does nothing; check the logs in the app's settings instead.

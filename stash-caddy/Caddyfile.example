@@ -13,10 +13,10 @@
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 }
 
-(authelia) {
-	forward_auth stash-authelia_server_1:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+# Private apps: Tinyauth checks the session and sends visitors to Pocket ID.
+(tinyauth) {
+	forward_auth stash-tinyauth_server_1:3000 {
+		uri /api/auth/caddy
 	}
 }
 
@@ -37,12 +37,17 @@
 	# sudo docker logs stash-caddy_server_1
 	log
 
-	@auth host auth.example.com
-	handle @auth {
-		reverse_proxy stash-authelia_server_1:9091
+	# Pocket ID (passkey sign-in) and Tinyauth (login for the private apps)
+	@id host id.example.com
+	handle @id {
+		reverse_proxy stash-pocket-id_server_1:1411
+	}
+	@login host login.example.com
+	handle @login {
+		reverse_proxy stash-tinyauth_server_1:3000
 	}
 
-	# Public: apps log in with their own accounts / Authelia OIDC.
+	# Public: apps log in with their own accounts / Pocket ID (OIDC).
 	# No forward_auth here: it breaks the mobile and TV apps.
 	@photos host photos.example.com
 	handle @photos {
@@ -61,32 +66,32 @@
 		reverse_proxy jellyseerr_server_1:5055
 	}
 
-	# Private: LAN/Tailscale only, plus Authelia (one_factor: one passkey login).
+	# Private: LAN/Tailscale only, plus Tinyauth (Pocket ID passkey sign-in).
 	# Open them as https://<name>.example.com:30443 (umbrelOS owns 443 on the LAN).
 	# REQUIRED: keep these commented out until the client IP test in
 	# README.md passes.
 	# @films host films.example.com
 	# handle @films {
 	# 	import private
-	# 	import authelia
+	# 	import tinyauth
 	# 	reverse_proxy radarr_server_1:7878
 	# }
 	# @shows host shows.example.com
 	# handle @shows {
 	# 	import private
-	# 	import authelia
+	# 	import tinyauth
 	# 	reverse_proxy sonarr_server_1:8989
 	# }
 	# @search host search.example.com
 	# handle @search {
 	# 	import private
-	# 	import authelia
+	# 	import tinyauth
 	# 	reverse_proxy prowlarr_server_1:9696
 	# }
 	# @torrents host torrents.example.com
 	# handle @torrents {
 	# 	import private
-	# 	import authelia
+	# 	import tinyauth
 	# 	reverse_proxy stash-qbittorrent_net_1:30024
 	# }
 

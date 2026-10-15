@@ -1,0 +1,35 @@
+version: "3.7"
+
+# No app_proxy: Pocket ID only works at its own https://id.<domain> address
+# (passkeys are bound to that domain), which Caddy serves. The manifest port
+# is only a placeholder; opening the app from the home screen shows nothing.
+
+services:
+  server:
+    image: pocketid/pocket-id:v2.18.0@sha256:323e7ef5bfacf7cf32f22f3d10ccdf48e0c97c94d67e7e40b0b996830deb5165
+    restart: on-failure
+    environment:
+      # The entrypoint runs Pocket ID as this user and chowns /app/data.
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Seoul
+      ENCRYPTION_KEY_FILE: /secrets/encryption_key
+      # Only Caddy reaches Pocket ID (no published port), over umbrel_main_network.
+      TRUST_PROXY: 10.21.0.0/16
+      ANALYTICS_DISABLED: "true"
+      ALLOW_INSECURE_CALLBACK_URLS: "false"
+    # APP_URL (https://id.<domain>) comes from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # SQLite database and uploads
+      - ${APP_DATA_DIR}/data/data:/app/data
+      # encryption_key (not in git)
+      - ${APP_DATA_DIR}/data/secrets:/secrets:ro
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s

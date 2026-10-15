@@ -37,6 +37,20 @@
       "notes": { "github": "stumpapp/stump" },
       "automerge": ["patch"]
     },
+    "pocketid/pocket-id": {
+      "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
+      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "pocket-id/pocket-id" },
+      "always_review": ["major"],
+      "automerge": ["minor", "patch"]
+    },
+    "ghcr.io/tinyauthapp/tinyauth": {
+      "_comment": "Major releases have breaking-update guides (tinyauth.app/docs/breaking-updates).",
+      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "tinyauthapp/tinyauth" },
+      "always_review": ["major"],
+      "automerge": ["patch"]
+    },
     "ghcr.io/kic2807/caddy-cloudflare": {
       "_comment": "Built by .github/workflows/build-caddy.yml. Tag <caddy>-cf<caddy-dns/cloudflare>; a plugin-only change is a 'build' bump. Caddy flags breaking changes in its release notes.",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-cf(?P<cf1>\\d+)\\.(?P<cf2>\\d+)\\.(?P<cf3>\\d+)$",
@@ -50,6 +64,8 @@
     "stash-gitea-act-runner": { "primary": "gitea/runner" },
     "stash-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
     "stash-stump": { "primary": "aaronleopold/stump" },
-    "stash-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" }
+    "stash-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
+    "stash-pocket-id": { "primary": "pocketid/pocket-id" },
+    "stash-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" }
   }
 }

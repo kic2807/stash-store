@@ -8,7 +8,8 @@ Proxy Manager:
   Cloudflare DNS challenge,
 - passes requests straight to the app containers over the Umbrel Docker
   network (not through Umbrel's `app_proxy`, which would add Umbrel login),
-- protects private apps with Authelia `forward_auth`.
+- protects private apps with `forward_auth` through Tinyauth (sign-in with
+  Pocket ID passkeys).
 
 Image: `ghcr.io/kic2807/caddy-cloudflare`, the official Caddy image plus the
 [caddy-dns/cloudflare](https://github.com/caddy-dns/cloudflare) module, built
@@ -106,7 +107,7 @@ The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
 `LAN_CIDR` or is `10.21.0.1` (see "What Caddy sees" below). That only works if
 outside clients reach Caddy with their real address. If they arrived as a
 gateway address instead, outside requests could look like local ones. **Do not enable films/shows/search/torrents
-until all three checks pass.** Authelia (`one_factor`, passkey login) still
+until all three checks pass.** Tinyauth (Pocket ID passkey sign-in) still
 protects them if this check ever fails, but it must not be the only protection.
 
 The example has an `ipcheck.<domain>` host that uses `(private)` and answers
@@ -165,7 +166,7 @@ would show the real `100.x` address but also changes all forwarded tailnet
 traffic, including the Umbrel's exit node use, so it is not done.
 
 Consequence: `(private)` cannot tell Tailscale clients from processes on the
-Umbrel itself; both are trusted. Authelia still asks for a login.
+Umbrel itself; both are trusted. Tinyauth still asks for a login.
 
 ## If Caddy sees 172.x
 
@@ -206,7 +207,7 @@ https://films.<domain>:30443
 umbrelOS itself listens on 443 on the LAN (`lan-ingress.ts` in the umbrelOS
 source), so `https://films.<domain>` without the port would reach the Umbrel
 dashboard instead of Caddy. The wildcard certificate is valid on any port, and
-Authelia's session cookie and rules ignore the port.
+Tinyauth's session cookie (set for `<domain>`) is sent on any port.
 
 DNS for the private hosts: a DNS-only (grey cloud) record pointing at the
 Umbrel's LAN address. Never proxy them through Cloudflare (see below).
@@ -229,15 +230,16 @@ Alternatives not used (kept for reference):
 
 | Host | Target | Access |
 |------|--------|--------|
-| `auth.` | `stash-authelia_server_1:9091` | public (Authelia portal) |
+| `id.` | `stash-pocket-id_server_1:1411` | public (Pocket ID) |
+| `login.` | `stash-tinyauth_server_1:3000` | public (Tinyauth) |
 | `photos.` | `immich_server_1:2283` | public, Immich login / OIDC |
 | `movies.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
 | `games.` | `romm_server_1:8080` | public, RomM login / OIDC |
 | `requests.` | `jellyseerr_server_1:5055` | public, Jellyseerr login |
-| `films.` | `radarr_server_1:7878` | private + Authelia one_factor |
-| `shows.` | `sonarr_server_1:8989` | private + Authelia one_factor |
-| `search.` | `prowlarr_server_1:9696` | private + Authelia one_factor |
-| `torrents.` | `stash-qbittorrent_net_1:30024` | private + Authelia one_factor |
+| `films.` | `radarr_server_1:7878` | private + Tinyauth |
+| `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
+| `search.` | `prowlarr_server_1:9696` | private + Tinyauth |
+| `torrents.` | `stash-qbittorrent_net_1:30024` | private + Tinyauth |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked

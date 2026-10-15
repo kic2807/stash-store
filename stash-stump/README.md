@@ -27,13 +27,14 @@ Port **10801** (Stump's default, so reader apps can use their usual setting):
 - Reader endpoints `/opds`, `/api`, `/kobo`, `/koreader` skip Umbrel login and
   use Stump accounts.
 
-## Log in with Authelia (optional)
+## Log in with Pocket ID (optional)
 
-1. In Authelia, uncomment the `stump` client block in `configuration.yml` and
-   put in the client secret digest (see stash-authelia README → OIDC clients).
-   Redirect URI: `https://stump.<domain>/api/v2/auth/oidc/callback`.
+1. In Pocket ID, add an OIDC client `Stump` with callback URL
+   `https://stump.<domain>/api/v2/auth/oidc/callback` and the `admins` group
+   (see stash-pocket-id README → Connecting apps).
 2. Create `~/umbrel/app-data/stash-stump/data/.env` from `.env.example` with the
-   plain client secret, `chmod 600`, restart Stump.
+   client ID and secret, `chmod 600`, restart Stump.
+3. Stump needs a public Caddy host `stump.<domain>` → `stash-stump_server_1:10801`.
 
 See [Stump's OIDC guide](https://www.stumpapp.dev/docs/guides/access-control/oidc)
 for `STUMP_OIDC_DISABLE_LOCAL_AUTH` and other options.
