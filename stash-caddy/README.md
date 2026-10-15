@@ -120,7 +120,6 @@ with the address Caddy sees.
    ```
 
    Expected: `allowed, you are 192.168.x.y` (your PC's LAN address).
-   *Not tested yet.*
 
 2. **From outside** (a laptop on the phone's LTE hotspot, Wi-Fi off):
 
@@ -147,14 +146,14 @@ router's address. Then do not open the private hosts; see "If Caddy sees
 After passing: uncomment the private hosts, remove the `ipcheck` block,
 validate, reload. Repeat the test after umbrelOS updates.
 
-## What Caddy sees (tested 2026-10-15)
+## What Caddy sees (tested 2026-10-15/16)
 
 | Client | `remote_ip` in Caddy's log | `(private)` |
 |--------|----------------------------|-------------|
 | Outside (LTE, through the router's 443 → 30443) | the client's real public address | blocked |
 | Tailscale client → Umbrel's Tailscale address `:30443` | `10.21.0.1` | allowed |
 | The Umbrel host itself (`127.0.0.1:30443`) | `10.21.0.1` | allowed |
-| LAN client → Umbrel LAN address `:30443` | not tested yet (expected: the client's LAN address) | allowed if in `LAN_CIDR` |
+| LAN client → Umbrel LAN address `:30443` | the client's own LAN address | allowed (in `LAN_CIDR`) |
 
 `10.21.0.1` is the `umbrel_main_network` gateway (fixed in umbrelOS,
 `app-environment.ts`). Tailscale clients show up as it because the official
