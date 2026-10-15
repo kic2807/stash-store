@@ -50,5 +50,9 @@ jobs:
           sed -i 's#HMAC_SECRET_TEMPLATE#{{ secret "/secrets/oidc_hmac_secret" | msquote }}#' cfg/configuration.yml
           sed -i 's#SIGNING_KEY_TEMPLATE#{{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}#' cfg/configuration.yml
           sed -i "s#\$pbkdf2-sha512\$310000\$REPLACE_WITH_DIGEST#${digest}#" cfg/configuration.yml
-          sed -n '/^identity_providers:/,/^#/p' cfg/configuration.yml | grep -v -E 'client_secret|BEGIN|END|^ {10}[A-Za-z0-9+/=]+$' | head -30
-          validate
+          validate || {
+            echo "== rendered (throwaway secrets), lines 80-110"
+            docker run --rm -e X_AUTHELIA_CONFIG_FILTERS=template -v "$PWD/cfg:/config" -v "$PWD/secrets:/secrets:ro" \
+              "$image" authelia config template --config /config/configuration.yml | sed -n '80,110p' | cat -A | cut -c1-90
+            exit 1
+          }
