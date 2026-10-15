@@ -2,7 +2,7 @@ manifestVersion: 1
 id: stash-caddy
 category: networking
 name: Caddy
-version: "2.11.7"
+version: "2.11.7-1"
 tagline: Reverse proxy with a wildcard certificate and Authelia forward auth
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg
 description: >-
@@ -13,7 +13,8 @@ description: >-
 
 
   Before starting, create the .env file and the Caddyfile described in the store README in the app data folder, then restart the app.
-releaseNotes: ""
+releaseNotes: >-
+  Fixes "exec /usr/bin/caddy: operation not permitted" on start (image rebuilt without file capabilities).
 
 developer: Caddy
 website: https://caddyserver.com
