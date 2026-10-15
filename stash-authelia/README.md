@@ -3,8 +3,8 @@
 [Authelia](https://www.authelia.com) 4.39: one account and passkey login for
 every service.
 
-- **Forward auth** through Nginx Proxy Manager (`auth_request`) for apps without
-  SSO: Radarr, Sonarr, Prowlarr, qBittorrent, the NPM admin UI.
+- **Forward auth** through Caddy (`forward_auth`, stash-caddy) for apps without
+  SSO: Radarr, Sonarr, Prowlarr, qBittorrent.
 - **OpenID Connect provider** for Immich, RomM and Jellyfin (SSO plugin).
 - Single container, SQLite storage, in-memory sessions (no Redis/PostgreSQL).
   Sessions are lost when Authelia restarts; everyone logs in again.
@@ -34,7 +34,7 @@ Secrets are passed as files (`AUTHELIA_*_FILE`), so they never appear in
 
 ## Ports
 
-- Nginx Proxy Manager reaches Authelia over the Umbrel Docker network as
+- Caddy (stash-caddy) reaches Authelia over the Umbrel Docker network as
   `stash-authelia_server_1:9091`, so no host port is published. (9091 itself is
   already the official Transmission app's port.)
 - The Umbrel home screen icon uses port **30091** with Umbrel login turned off
@@ -70,7 +70,7 @@ commands fail with `Unable to find image 'authelia:latest'`.
    Make a password hash. It asks for the password twice and prints
    `Digest: $argon2id$v=19$m=65536,...`; copy everything from `$argon2id$` to
    the end. Keep the password in a password manager: it is needed for the first
-   login, for registering passkeys, and for `two_factor` services.
+   login and for registering passkeys.
 
    ```sh
    sudo docker run --rm -it authelia/authelia:4.39.28 authelia crypto hash generate argon2
@@ -130,7 +130,7 @@ commands fail with `Unable to find image 'authelia:latest'`.
       |-----|---------------|
       | `session.cookies[0].authelia_url` | the Authelia portal, `https://auth.<domain>` |
       | `session.cookies[0].default_redirection_url` | where to land after logging in at the portal directly |
-      | `access_control.rules` | one entry per subdomain protected through NPM forward auth; anything not listed is denied |
+      | `access_control.rules` | one entry per subdomain protected through Caddy `forward_auth`; anything not listed is denied |
       | `webauthn.display_name` | name shown in the passkey prompt |
 
    d. Lock it and validate:
@@ -152,124 +152,68 @@ commands fail with `Unable to find image 'authelia:latest'`.
 5. **Restart the app** and check `sudo docker logs --tail 20 stash-authelia_server_1`
    for `Startup complete`.
 
-6. **NPM portal host** (see below), then open `https://auth.<domain>`, log in with
+6. **Caddy portal host** (`auth.` in stash-caddy's Caddyfile, see below), then open `https://auth.<domain>`, log in with
    the password, go to **Settings → Security keys / Passkeys → Add**. Authelia
    asks for a one-time code first; read it with
    `sudo tail -n 20 ~/umbrel/app-data/stash-authelia/data/db/notification.txt`. From then on use **Sign in with a passkey**.
 
-## Nginx Proxy Manager
+## Caddy (stash-caddy)
 
-### Snippets (once)
+Caddy reaches Authelia over the Umbrel Docker network as
+`stash-authelia_server_1:9091`. Both pieces are already in
+[stash-caddy's `Caddyfile.example`](../stash-caddy/Caddyfile.example), following
+[Authelia's Caddy guide](https://www.authelia.com/integration/proxies/caddy/):
 
-The official NPM app mounts `~/umbrel/app-data/nginx-proxy-manager/data/npm-data`
-at `/data`, so put the snippets there:
+```caddyfile
+(authelia) {
+	forward_auth stash-authelia_server_1:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+	}
+}
 
-```sh
-S=~/umbrel/app-data/nginx-proxy-manager/data/npm-data/snippets
-mkdir -p $S
-```
+# portal
+@auth host auth.example.com
+handle @auth {
+	reverse_proxy stash-authelia_server_1:9091
+}
 
-`$S/proxy.conf`:
-
-```nginx
-proxy_set_header Host $host;
-proxy_set_header X-Original-URL $scheme://$host$request_uri;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header X-Forwarded-Host $host;
-proxy_set_header X-Forwarded-URI $request_uri;
-proxy_set_header X-Forwarded-Ssl on;
-proxy_set_header X-Forwarded-For $remote_addr;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_http_version 1.1;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection $http_connection;
-```
-
-`$S/authelia-location.conf`:
-
-```nginx
-set $upstream_authelia http://stash-authelia_server_1:9091/api/authz/auth-request;
-
-location /internal/authelia/authz {
-    internal;
-    proxy_pass $upstream_authelia;
-
-    proxy_set_header X-Original-Method $request_method;
-    proxy_set_header X-Original-URL $scheme://$host$request_uri;
-    proxy_set_header X-Forwarded-For $remote_addr;
-    proxy_set_header Content-Length "";
-    proxy_set_header Connection "";
-
-    proxy_pass_request_body off;
-    proxy_http_version 1.1;
-    proxy_cache_bypass $cookie_session;
-    proxy_no_cache $cookie_session;
-    proxy_buffers 4 32k;
-    client_body_buffer_size 128k;
+# protected host
+@films host films.example.com
+handle @films {
+	import private
+	import authelia
+	reverse_proxy radarr_server_1:7878
 }
 ```
 
-`$S/authelia-authrequest.conf`:
+`/api/authz/forward-auth` is enabled in `configuration.yml` under
+`server.endpoints.authz.forward-auth` (`implementation: 'ForwardAuth'`).
 
-```nginx
-auth_request /internal/authelia/authz;
+| Host | Opened as | Caddy | Authelia rule |
+|------|-----------|-------|---------------|
+| `auth.` | `https://auth.<domain>` | public | — (the portal) |
+| `films.` `shows.` `search.` `torrents.` | `https://<name>.<domain>:30443` from LAN or Tailscale | `(private)` + `(authelia)` | `one_factor` |
+| `photos.` `movies.` `games.` `requests.` | `https://<name>.<domain>` | public, no forward auth | — (OIDC clients / app login) |
 
-auth_request_set $user $upstream_http_remote_user;
-auth_request_set $groups $upstream_http_remote_groups;
-auth_request_set $name $upstream_http_remote_name;
-auth_request_set $email $upstream_http_remote_email;
-proxy_set_header Remote-User $user;
-proxy_set_header Remote-Groups $groups;
-proxy_set_header Remote-Email $email;
-proxy_set_header Remote-Name $name;
-
-auth_request_set $redirection_url $upstream_http_location;
-error_page 401 =302 $redirection_url;
-```
-
-These follow Authelia's [NGINX snippets](https://www.authelia.com/integration/proxies/nginx/#supporting-configuration-snippets)
-with the upstream changed to the Umbrel container name. If your sites sit
-behind Cloudflare's proxy, `$remote_addr` is a Cloudflare IP; see Authelia's
-trusted-proxies notes before relying on per-IP bans.
-
-### Authelia portal: `auth.<domain>`
-
-- Details: scheme `http`, forward host `stash-authelia_server_1`, port `9091`
-- SSL: your certificate, Force SSL on
-- Advanced:
-
-  ```nginx
-  location / {
-      include /data/snippets/proxy.conf;
-      proxy_pass $forward_scheme://$server:$port;
-  }
-  ```
-
-### Protected app (example: qBittorrent at `qbit.<domain>`)
-
-- Details: forward host `stash-qbittorrent_net_1`, port `30024`
-  (Radarr/Sonarr/Prowlarr: their Umbrel container name and port)
-- SSL: your certificate, Force SSL on
-- Advanced (the Details-tab switches and Custom Locations are ignored/unprotected
-  when you use this):
-
-  ```nginx
-  include /data/snippets/authelia-location.conf;
-  location / {
-      include /data/snippets/proxy.conf;
-      include /data/snippets/authelia-authrequest.conf;
-      proxy_pass $forward_scheme://$server:$port;
-  }
-  ```
-
-Every protected domain also needs a matching rule in `access_control`
-(the default is `deny`).
+- **The private hosts use port 30443 in the URL.** umbrelOS itself owns 443 on
+  the LAN, see stash-caddy README. Authelia matches rules on the host name
+  only, so the port needs no rule changes, and the session cookie (domain
+  `<domain>`) is sent on any port.
+- **Every protected host needs a rule in `access_control`**; the default is
+  `deny`, so a host added to Caddy but not here returns 403.
+- **One passkey login is enough** (`one_factor`) for all of them. Caddy
+  already limits them to LAN and Tailscale clients.
+- Caddy does not trust forwarded headers from clients (no `trusted_proxies`),
+  so Authelia sees the address Caddy saw. Check it with Authelia's
+  [validating forwarded authentication](https://www.authelia.com/reference/guides/validating-forwarded-authentication/)
+  guide after setup.
 
 ## OIDC clients
 
 Apps that can log in through Authelia: **Immich, RomM, Jellyfin** (SSO
-plugin), **autobrr** and **Stump**. Radarr, Sonarr, Prowlarr, qBittorrent and NPM have no
-OIDC support; protect them with forward auth instead.
+plugin), **autobrr** and **Stump**. Radarr, Sonarr, Prowlarr and qBittorrent have no
+OIDC support; they are protected with forward auth instead.
 
 `configuration.yml` contains a commented-out block for each of them. To add
 the first app:
@@ -297,7 +241,7 @@ the first app:
 | App | Issuer / discovery | Client ID | Where | Notes |
 |-----|-------------------|-----------|-------|-------|
 | Immich | `https://auth.<domain>/.well-known/openid-configuration` | `immich` | Administration → Settings → Authentication → OAuth | mobile app login uses `app.immich:///oauth-callback` (already in the block) |
-| RomM | `https://auth.<domain>` | `romm` | Umbrel → RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_PROVIDER=authelia`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI=https://romm.<domain>/api/oauth/openid`, `OIDC_SERVER_APPLICATION_URL=https://auth.<domain>` | names from the Authelia RomM guide |
+| RomM | `https://auth.<domain>` | `romm` | Umbrel → RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_PROVIDER=authelia`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI=https://games.<domain>/api/oauth/openid`, `OIDC_SERVER_APPLICATION_URL=https://auth.<domain>` | names from the Authelia RomM guide |
 | Jellyfin | `https://auth.<domain>` | `jellyfin` | Dashboard → Plugins → install **SSO Authentication** (9p4) → add provider named `authelia` | the provider name is in the redirect URI |
 | autobrr | `https://auth.<domain>` | `autobrr` | `~/umbrel/app-data/autobrr/data/config.toml`: `oidcEnabled`, `oidcIssuer`, `oidcClientId`, `oidcClientSecret`, `oidcRedirectUrl = "https://autobrr.<domain>/api/auth/oidc/callback"` | not covered by Authelia's guides; check autobrr's logs |
 | Stump | `https://auth.<domain>` | `stump` | `~/umbrel/app-data/stash-stump/data/.env` from `stash-stump/.env.example` | see stash-stump README |
@@ -307,17 +251,19 @@ Authelia's per-app guides:
 [RomM](https://www.authelia.com/integration/openid-connect/clients/romm/),
 [Jellyfin](https://www.authelia.com/integration/openid-connect/clients/jellyfin/).
 
-The redirect URIs use `immich.`, `romm.`, `jellyfin.`, `autobrr.` and `stump.`
-subdomains. If you use other names, change them in both the client block and
-the NPM proxy host.
+The redirect URIs use the stash-caddy host names `photos.` (Immich), `games.`
+(RomM), `movies.` (Jellyfin), plus `autobrr.` and `stump.` (not in the Caddyfile
+example; add a public host for them first). If you use other names, change
+them in both the client block and the Caddyfile.
 
-## Passkeys and `two_factor`
+## Passkeys
 
-A passkey login counts as **one** factor. Domains with `two_factor` (and OIDC
-clients with `authorization_policy: two_factor`) will additionally ask for the
-password. To make a user-verified passkey (Face ID, fingerprint, PIN) count as
-two factors, set `webauthn.experimental_enable_passkey_uv_two_factors: true`;
-upstream marks it experimental and plans to replace it with custom policies.
+A passkey login counts as **one** factor
+([`enable_passkey_login`](https://www.authelia.com/configuration/second-factor/webauthn/#enable_passkey_login)).
+That is why every rule and OIDC client here uses `one_factor`: one passkey
+login and you are in. A `two_factor` rule would ask for the password after the
+passkey. `webauthn.experimental_enable_passkey_uv_two_factors` stays off:
+upstream marks it unsupported and plans to make it a startup error.
 
 ## Upgrading
 

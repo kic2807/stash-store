@@ -106,8 +106,8 @@ The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
 `LAN_CIDR` or Tailscale's `100.64.0.0/10`. That only works if Caddy sees the
 real client address. If it saw Docker's gateway (172.x) instead, outside
 requests could look like LAN ones. **Do not enable films/shows/search/torrents
-until all three checks pass.** Authelia `two_factor` still protects them if
-this check ever fails, but it must not be the only protection.
+until all three checks pass.** Authelia (`one_factor`, passkey login) still
+protects them if this check ever fails, but it must not be the only protection.
 
 The example has an `ipcheck.<domain>` host that uses `(private)` and answers
 with the address Caddy sees.
@@ -172,16 +172,34 @@ What can be done instead:
    Caddy sees. This needs a compose change in the store (and a fixed LAN IP
    for the Umbrel); not done yet.
 
-## Reaching the private hosts from the LAN
+## Opening the private hosts
 
-umbrelOS itself listens on 443 (`lan-ingress.ts` in the umbrelOS source). If
-`films.<domain>` resolves to the Umbrel LAN address, `https://films.<domain>`
-reaches the Umbrel dashboard, not Caddy. Ways around it, to be decided:
+Private hosts are opened **with the port in the URL**, from the LAN and from
+Tailscale alike:
 
-- use the port in the URL: `https://films.<domain>:30443` (works as is; the
-  wildcard certificate is valid on any port),
+```
+https://films.<domain>:30443
+```
+
+umbrelOS itself listens on 443 on the LAN (`lan-ingress.ts` in the umbrelOS
+source), so `https://films.<domain>` without the port would reach the Umbrel
+dashboard instead of Caddy. The wildcard certificate is valid on any port, and
+Authelia's session cookie and rules ignore the port.
+
+DNS for the private hosts: a DNS-only (grey cloud) record pointing at the
+Umbrel's LAN address. Never proxy them through Cloudflare (see below).
+
+From Tailscale, how the client reaches that address (a subnet route on the
+Umbrel, or the Umbrel's Tailscale address in a hosts entry) decides which
+source address Caddy sees, and it must be in `LAN_CIDR` or `100.64.0.0/10`.
+Not tested yet: open `https://ipcheck.<domain>:30443` from a Tailscale client
+the way you plan to use it and check the answer before relying on it.
+
+Alternatives not used (kept for reference):
+
 - point the private hosts at the WAN address and let the router hairpin the
-  traffic back (what source address Caddy then sees must pass the test above),
+  traffic back; the source address Caddy then sees would have to pass the
+  client IP test,
 - a router rule on the LAN side that redirects `<umbrel-lan-ip>:443` to `:30443`.
 
 ## Hosts
@@ -193,10 +211,10 @@ reaches the Umbrel dashboard, not Caddy. Ways around it, to be decided:
 | `movies.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
 | `games.` | `romm_server_1:8080` | public, RomM login / OIDC |
 | `requests.` | `jellyseerr_server_1:5055` | public, Jellyseerr login |
-| `films.` | `radarr_server_1:7878` | private + Authelia two_factor |
-| `shows.` | `sonarr_server_1:8989` | private + Authelia two_factor |
-| `search.` | `prowlarr_server_1:9696` | private + Authelia two_factor |
-| `torrents.` | `stash-qbittorrent_net_1:30024` | private + Authelia two_factor |
+| `films.` | `radarr_server_1:7878` | private + Authelia one_factor |
+| `shows.` | `sonarr_server_1:8989` | private + Authelia one_factor |
+| `search.` | `prowlarr_server_1:9696` | private + Authelia one_factor |
+| `torrents.` | `stash-qbittorrent_net_1:30024` | private + Authelia one_factor |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked

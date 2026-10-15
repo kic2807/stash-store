@@ -55,7 +55,8 @@
 		reverse_proxy jellyseerr_server_1:5055
 	}
 
-	# Private: LAN/Tailscale only, plus Authelia two_factor.
+	# Private: LAN/Tailscale only, plus Authelia (one_factor: one passkey login).
+	# Open them as https://<name>.example.com:30443 (umbrelOS owns 443 on the LAN).
 	# REQUIRED: keep these commented out until the client IP test in
 	# README.md passes.
 	# @films host films.example.com

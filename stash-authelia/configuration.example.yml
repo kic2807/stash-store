@@ -14,9 +14,9 @@ server:
   address: 'tcp://:9091/'
   endpoints:
     authz:
-      # Used by Nginx Proxy Manager: /api/authz/auth-request
-      auth-request:
-        implementation: 'AuthRequest'
+      # Used by Caddy forward_auth (stash-caddy): /api/authz/forward-auth
+      forward-auth:
+        implementation: 'ForwardAuth'
 
 log:
   level: info
@@ -33,11 +33,8 @@ webauthn:
     # Store the credential on the device so it works as a passkey.
     discoverability: 'required'
     user_verification: 'required'
-  # A passkey login only counts as one factor. two_factor rules then also ask
-  # for the password. Uncomment to let a passkey with user verification
-  # (Face ID, fingerprint, PIN) satisfy two_factor too. Upstream marks this as
-  # experimental and it will be replaced by custom policies in a later release.
-  # experimental_enable_passkey_uv_two_factors: true
+  # A passkey login counts as one factor, so every rule and OIDC client below
+  # uses one_factor: one passkey login is all it takes. No two_factor rules.
 
 authentication_backend:
   file:
@@ -45,8 +42,7 @@ authentication_backend:
     password:
       algorithm: 'argon2'
 
-# Users still need a password: for the first login, to register a passkey, and
-# for two_factor rules (unless the experimental option above is on).
+# Users still need a password: for the first login and to register a passkey.
 password_policy:
   zxcvbn:
     enabled: true
@@ -56,18 +52,15 @@ access_control:
   # Anything not listed below is blocked.
   default_policy: 'deny'
   rules:
-    # Media management behind forward auth (passkey alone is enough).
+    # Private hosts behind Caddy forward_auth (stash-caddy Caddyfile). Caddy
+    # already limits them to LAN/Tailscale; a passkey login is enough.
+    # Opened as https://<name>.example.com:30443 (the port does not matter here).
     - domain:
-        - 'radarr.example.com'
-        - 'sonarr.example.com'
-        - 'prowlarr.example.com'
+        - 'films.example.com'     # Radarr
+        - 'shows.example.com'     # Sonarr
+        - 'search.example.com'    # Prowlarr
+        - 'torrents.example.com'  # qBittorrent
       policy: 'one_factor'
-
-    # Admin and download tools: require two factors.
-    - domain:
-        - 'qbit.example.com'
-        - 'npm.example.com'
-      policy: 'two_factor'
 
     # Apps that use Authelia through OIDC (Immich, RomM, Jellyfin, Stump) do not
     # need rules here; their policy is set per client below.
@@ -78,7 +71,7 @@ session:
     - name: 'authelia_session'
       domain: 'example.com'
       authelia_url: 'https://auth.example.com'
-      default_redirection_url: 'https://www.example.com'
+      default_redirection_url: 'https://photos.example.com'
       inactivity: '1 day'
       expiration: '1 week'
       remember_me: '1 month'
@@ -129,8 +122,8 @@ notifier:
 #         require_pkce: true
 #         pkce_challenge_method: 'S256'
 #         redirect_uris:
-#           - 'https://immich.example.com/auth/login'
-#           - 'https://immich.example.com/user-settings'
+#           - 'https://photos.example.com/auth/login'
+#           - 'https://photos.example.com/user-settings'
 #           - 'app.immich:///oauth-callback'
 #         scopes: ['openid', 'profile', 'email']
 #         response_types: ['code']
@@ -149,7 +142,7 @@ notifier:
 #         require_pkce: false
 #         pkce_challenge_method: ''
 #         redirect_uris:
-#           - 'https://romm.example.com/api/oauth/openid'
+#           - 'https://games.example.com/api/oauth/openid'
 #         scopes: ['openid', 'profile', 'email']
 #         response_types: ['code']
 #         grant_types: ['authorization_code']
@@ -167,7 +160,7 @@ notifier:
 #         require_pkce: true
 #         pkce_challenge_method: 'S256'
 #         redirect_uris:
-#           - 'https://jellyfin.example.com/sso/OID/redirect/authelia'
+#           - 'https://movies.example.com/sso/OID/redirect/authelia'
 #         scopes: ['openid', 'profile', 'groups']
 #         response_types: ['code']
 #         grant_types: ['authorization_code']

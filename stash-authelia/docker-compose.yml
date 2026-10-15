@@ -5,8 +5,8 @@ services:
     environment:
       APP_HOST: stash-authelia_server_1
       APP_PORT: 9091
-      # Authelia is the login portal itself and is reached through Nginx Proxy
-      # Manager at auth.<domain>. Umbrel login in front of it would mean logging
+      # Authelia is the login portal itself and is reached through Caddy
+      # (stash-caddy) at auth.<domain>. Umbrel login in front of it would mean logging
       # in twice (and would break forward auth for other apps).
       PROXY_AUTH_ADD: "false"
 
