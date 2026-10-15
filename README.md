@@ -21,6 +21,7 @@ The apps show up under **Stash App Store**.
 | App | Version | Port | What | Setup |
 |-----|---------|------|------|-------|
 | [stash-cloudflare-ddns](stash-cloudflare-ddns/README.md) | 1.17.1 | — (30101 placeholder) | Keeps Cloudflare DNS records on this server's public IP. No web UI. | `.env` |
+| [stash-caddy](stash-caddy/README.md) | 2.11.7 | 30080, 30443 (30104 placeholder) | Reverse proxy: wildcard certificate (Cloudflare DNS), Authelia forward auth. No web UI. | `.env` + Caddyfile |
 | [stash-gitea-act-runner](stash-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [stash-qbittorrent](stash-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
 | [stash-authelia](stash-authelia/README.md) | 4.39.28 | 30091 | SSO with passkeys: NPM forward auth + OIDC provider. | config files + secret files |
@@ -37,7 +38,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, gitea-act-runner, qbittorrent, stump, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, gitea-act-runner, qbittorrent, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -73,7 +74,7 @@ Configuration files under `data/config/` and one secret per file under
 
 1. Add this store.
 2. **stash-cloudflare-ddns** → `.env` → check the log. DNS for the domain now points home.
-3. **stash-caddy** (reverse proxy, wildcard certificate) — *not in the store yet*.
+3. **stash-caddy** → `.env` + Caddyfile → router 80→30080, 443→30443 → certificate in the log → **client IP test** (required before any private host).
 4. **stash-authelia** → secrets, users, config → Caddy `auth.` host → register a passkey.
 5. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
 6. Official **Immich** → **stash-band-backup** → `.env` (Immich API key, BAND login).

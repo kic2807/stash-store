@@ -1,0 +1,32 @@
+manifestVersion: 1
+id: stash-caddy
+category: networking
+name: Caddy
+version: "2.11.7"
+tagline: Reverse proxy with a wildcard certificate and Authelia forward auth
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg
+description: >-
+  Background service with no web UI. Opening the app from the home screen does nothing; check the logs in the app's settings instead.
+
+
+  Caddy receives ports 30080/30443 (forward 80 and 443 on your router to them), gets a wildcard certificate from Let's Encrypt through the Cloudflare DNS challenge, and passes requests to other apps over the Umbrel Docker network. Built with the caddy-dns/cloudflare module.
+
+
+  Before starting, create the .env file and the Caddyfile described in the store README in the app data folder, then restart the app.
+releaseNotes: ""
+
+developer: Caddy
+website: https://caddyserver.com
+dependencies: []
+repo: https://github.com/caddyserver/caddy
+support: https://caddy.community
+
+port: 30104
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/stash-store

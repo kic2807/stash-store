@@ -1,0 +1,34 @@
+name: Check Caddyfile
+
+# Validates stash-caddy's Caddyfile.example and the placeholder Caddyfile with
+# the image pinned in stash-caddy/docker-compose.yml.
+
+on:
+  push:
+    branches: [main]
+    paths: [stash-caddy/**]
+  pull_request:
+    paths: [stash-caddy/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate
+        run: |
+          image=$(sed -n 's/^ *image: *//p' stash-caddy/docker-compose.yml | head -1)
+          echo "image: $image"
+          for f in stash-caddy/Caddyfile.example stash-caddy/data/etc/Caddyfile; do
+            echo "== $f"
+            # Dummy values: validate loads the Cloudflare module but does not call the API.
+            docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" \
+              -e CLOUDFLARE_API_TOKEN=dummy-token-for-validation -e ACME_EMAIL=ci@example.com \
+              -e LAN_CIDR=192.168.1.0/24 \
+              "$image" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          done

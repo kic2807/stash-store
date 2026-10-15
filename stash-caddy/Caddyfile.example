@@ -1,0 +1,97 @@
+# Caddyfile for stash-caddy. Copy to
+# ~/umbrel/app-data/stash-caddy/data/etc/Caddyfile and replace example.com
+# with your domain (see README.md). {env.X} and {$X} come from data/.env.
+#
+# Container names and ports are the official Umbrel apps' app_proxy targets
+# (APP_HOST:APP_PORT). Caddy talks to them directly over umbrel_main_network,
+# so Umbrel's own login is not in the way. Check them after installing each
+# app (README → "Check container names").
+
+{
+	email {env.ACME_EMAIL}
+	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
+(authelia) {
+	forward_auth stash-authelia_server_1:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+	}
+}
+
+# Only LAN and Tailscale clients. Uses LAN_CIDR from .env instead of
+# private_ranges, which would also let in 172.16.0.0/12 (Docker's own
+# networks) if a request ever reached Caddy through Docker's userland proxy.
+(private) {
+	@outside not remote_ip {$LAN_CIDR} 100.64.0.0/10
+	abort @outside
+}
+
+*.example.com, example.com {
+	# Access log on stdout with the client address (remote_ip):
+	# sudo docker logs stash-caddy_server_1
+	log
+
+	@auth host auth.example.com
+	handle @auth {
+		reverse_proxy stash-authelia_server_1:9091
+	}
+
+	# Public: apps log in with their own accounts / Authelia OIDC.
+	# No forward_auth here: it breaks the mobile and TV apps.
+	@photos host photos.example.com
+	handle @photos {
+		reverse_proxy immich_server_1:2283
+	}
+	@movies host movies.example.com
+	handle @movies {
+		reverse_proxy jellyfin_server_1:8096
+	}
+	@games host games.example.com
+	handle @games {
+		reverse_proxy romm_server_1:8080
+	}
+	@requests host requests.example.com
+	handle @requests {
+		reverse_proxy jellyseerr_server_1:5055
+	}
+
+	# Private: LAN/Tailscale only, plus Authelia two_factor.
+	# REQUIRED: keep these commented out until the client IP test in
+	# README.md passes.
+	# @films host films.example.com
+	# handle @films {
+	# 	import private
+	# 	import authelia
+	# 	reverse_proxy radarr_server_1:7878
+	# }
+	# @shows host shows.example.com
+	# handle @shows {
+	# 	import private
+	# 	import authelia
+	# 	reverse_proxy sonarr_server_1:8989
+	# }
+	# @search host search.example.com
+	# handle @search {
+	# 	import private
+	# 	import authelia
+	# 	reverse_proxy prowlarr_server_1:9696
+	# }
+	# @torrents host torrents.example.com
+	# handle @torrents {
+	# 	import private
+	# 	import authelia
+	# 	reverse_proxy stash-qbittorrent_net_1:30024
+	# }
+
+	# Client IP test (README). Remove after the test.
+	@ipcheck host ipcheck.example.com
+	handle @ipcheck {
+		import private
+		respond "allowed, you are {remote_host}" 200
+	}
+
+	handle {
+		abort
+	}
+}

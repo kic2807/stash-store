@@ -57,6 +57,7 @@
     "stash-gitea-act-runner": { "primary": "gitea/runner" },
     "stash-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
     "stash-authelia": { "primary": "authelia/authelia" },
-    "stash-stump": { "primary": "aaronleopold/stump" }
+    "stash-stump": { "primary": "aaronleopold/stump" },
+    "stash-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" }
   }
 }

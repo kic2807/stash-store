@@ -1,0 +1,42 @@
+version: "3.7"
+
+# No web UI, so there is no app_proxy service. The manifest port (30104) is
+# only a placeholder and deliberately differs from the published ports: when a
+# manifest port equals a published port, umbrelOS LAN ingress redirects that
+# port to its own proxy.
+
+services:
+  server:
+    image: ghcr.io/kic2807/caddy-cloudflare:2.11.7-cf0.2.4@sha256:8df91b6aa82a843932f4054aef5574bd6acc16910e497808bdba699b78a988e0
+    restart: on-failure
+    user: "1000:1000"
+    read_only: true
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true
+    sysctls:
+      # Lets the non-root user bind 80/443 inside the container.
+      net.ipv4.ip_unprivileged_port_start: 0
+    # Bound to IPv4 only: Docker maps host IPv6 addresses through its userland
+    # proxy, and Caddy would then see the Docker gateway (172.x) instead of the
+    # client address. Router forwards: 80 -> 30080, 443 -> 30443.
+    ports:
+      - "0.0.0.0:30080:80/tcp"
+      - "0.0.0.0:30443:443/tcp"
+      - "0.0.0.0:30443:443/udp"
+    environment:
+      TZ: Asia/Seoul
+    # CLOUDFLARE_API_TOKEN, ACME_EMAIL, LAN_CIDR come from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # Caddyfile (not in git; see Caddyfile.example)
+      - ${APP_DATA_DIR}/data/etc:/etc/caddy:ro
+      # Certificates and ACME account: must persist
+      - ${APP_DATA_DIR}/data/caddy:/data
+      # Autosaved config
+      - ${APP_DATA_DIR}/data/config:/config
+    tmpfs:
+      - /tmp
