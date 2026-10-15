@@ -65,6 +65,10 @@
 	handle @requests {
 		reverse_proxy jellyseerr_server_1:5055
 	}
+	@comics host comics.example.com
+	handle @comics {
+		reverse_proxy things-stump_server_1:10801
+	}
 
 	# Private: LAN/Tailscale only, plus Tinyauth (Pocket ID passkey sign-in).
 	# Open them as https://<name>.example.com:30443 (umbrelOS owns 443 on the LAN).

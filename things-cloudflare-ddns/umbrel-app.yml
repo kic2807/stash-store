@@ -2,15 +2,16 @@ manifestVersion: 1
 id: things-cloudflare-ddns
 category: networking
 name: Cloudflare DDNS
-version: "1.17.1"
+version: "1.17.1-1"
 tagline: Keep Cloudflare DNS records pointed at this server's public IP
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cloudflare.svg
 description: >-
   Background service with no web UI. Opening the app from the home screen does nothing; check the logs in the app's settings instead.
 
 
-  Before starting, create the .env file described in the store README (CLOUDFLARE_API_TOKEN, DOMAINS) in the app data folder, then restart the app.
-releaseNotes: ""
+  Before starting, create the .env file described in the store README (CLOUDFLARE_API_TOKEN, DOMAINS, optionally PROXIED) in the app data folder, then restart the app.
+releaseNotes: >-
+  PROXIED is no longer fixed to true: set it in .env or the app settings, per host if needed (e.g. is(id.example.com)). Unset means DNS only.
 
 developer: favonia
 website: https://github.com/favonia/cloudflare-ddns

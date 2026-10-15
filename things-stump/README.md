@@ -30,11 +30,13 @@ Port **10801** (Stump's default, so reader apps can use their usual setting):
 ## Log in with Pocket ID (optional)
 
 1. In Pocket ID, add an OIDC client `Stump` with callback URL
-   `https://stump.<domain>/api/v2/auth/oidc/callback` and the `admins` group
+   `https://comics.<domain>/api/v2/auth/oidc/callback` and the `admins` group
    (see things-pocket-id README → Connecting apps).
 2. Create `~/umbrel/app-data/things-stump/data/.env` from `.env.example` with the
    client ID and secret, `chmod 600`, restart Stump.
-3. Stump needs a public Caddy host `stump.<domain>` → `things-stump_server_1:10801`.
+3. Stump is served at `https://comics.<domain>` (Caddy host `comics.` →
+   `things-stump_server_1:10801`, already in the Caddyfile example; add
+   `comics.<domain>` to cloudflare-ddns `DOMAINS`).
 
 See [Stump's OIDC guide](https://www.stumpapp.dev/docs/guides/access-control/oidc)
 for `STUMP_OIDC_DISABLE_LOCAL_AUTH` and other options.

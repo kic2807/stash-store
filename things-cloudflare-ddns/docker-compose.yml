@@ -17,9 +17,10 @@ services:
       - no-new-privileges:true
     restart: on-failure
     environment:
-      PROXIED: "true"
       IP6_PROVIDER: none
-    # CLOUDFLARE_API_TOKEN and DOMAINS come from the app data .env file.
+    # CLOUDFLARE_API_TOKEN, DOMAINS and PROXIED come from the app data .env file
+    # (or the app's environment variable settings). PROXIED is not set here so
+    # it can be chosen per host, e.g. PROXIED=is(id.example.com); unset = false.
     env_file:
       - path: ${APP_DATA_DIR}/data/.env
         required: false

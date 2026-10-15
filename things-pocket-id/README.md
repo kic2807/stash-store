@@ -81,7 +81,7 @@ app gets those plus:
 | Immich | `https://photos.<domain>/auth/login`, `https://photos.<domain>/user-settings`, `app.immich:///oauth-callback` | Administration → Settings → Authentication → OAuth |
 | Jellyfin | `https://watch.<domain>/sso/OID/redirect/pocketid` | Dashboard → Plugins → **SSO Authentication** (9p4) → provider named `pocketid` |
 | RomM | `https://games.<domain>/api/oauth/openid` | RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI` (the callback), `OIDC_SERVER_APPLICATION_URL=https://id.<domain>`; check RomM's OIDC docs for `OIDC_PROVIDER` |
-| Stump | `https://stump.<domain>/api/v2/auth/oidc/callback` | `things-stump` `.env` (see its README) |
+| Stump | `https://comics.<domain>/api/v2/auth/oidc/callback` | `things-stump` `.env` (see its README) |
 
 **The app's server must reach `https://id.<domain>` too**, not only your
 browser (Pocket ID docs). From the Umbrel, its own WAN address is refused by

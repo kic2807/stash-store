@@ -245,6 +245,7 @@ Alternatives not used (kept for reference):
 | `watch.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
 | `games.` | `romm_server_1:8080` | public, RomM login / OIDC |
 | `requests.` | `jellyseerr_server_1:5055` | public, Jellyseerr login |
+| `comics.` | `things-stump_server_1:10801` | public, Stump login / OIDC (OPDS, Kobo, KOReader) |
 | `movies.` | `radarr_server_1:7878` | private + Tinyauth |
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `search.` | `prowlarr_server_1:9696` | private + Tinyauth |
