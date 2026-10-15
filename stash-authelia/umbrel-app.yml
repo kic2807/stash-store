@@ -2,7 +2,7 @@ manifestVersion: 1
 id: stash-authelia
 category: networking
 name: Authelia
-version: "4.39.28-1"
+version: "4.39.28-2"
 tagline: Single sign-on with passkeys for all your apps
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/authelia.svg
 description: >-
@@ -14,7 +14,7 @@ description: >-
 
   Use it at https://auth.<your domain> through Nginx Proxy Manager. Opening it from the Umbrel home screen shows an error page because the request does not come from your domain.
 releaseNotes: >-
-  Packaging only: documentation and example configuration switched from Nginx Proxy Manager to Caddy forward_auth. Nothing changes in a running setup.
+  Packaging only: the OIDC HMAC secret is no longer passed as an environment variable, which made Authelia require OIDC clients even with OIDC commented out. Documentation and example configuration now use Caddy forward_auth instead of Nginx Proxy Manager.
 
 developer: Authelia
 website: https://www.authelia.com

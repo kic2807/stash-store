@@ -4,10 +4,11 @@
 # replace every example.com with your domain. Do not commit the real file.
 #
 # Secrets are NOT in this file. They are read from /secrets/* via the
-# AUTHELIA_*_FILE variables in docker-compose.yml, and the OIDC signing key via
-# the "secret" template function in the jwks block below. Do not write template
-# braces anywhere else, comments included: the template filter evaluates the
-# whole file. Putting a secret here as well makes Authelia refuse to start.
+# AUTHELIA_*_FILE variables in docker-compose.yml; the OIDC HMAC secret and
+# signing key via the "secret" template function in the OIDC block below. Do
+# not write template braces anywhere else, comments included: the template
+# filter evaluates the whole file. Putting a secret here as well makes
+# Authelia refuse to start.
 
 theme: auto
 
@@ -97,8 +98,9 @@ notifier:
 # refuses to start with OIDC enabled and no valid client. To enable it, remove
 # the leading "# " from the identity_providers, oidc, jwks and clients lines
 # and from ONE client block, and put that client's secret digest in.
-# SIGNING_KEY_TEMPLATE stands for the template that reads the signing key; the
-# README has the exact text (it cannot be written here, not even in a comment,
+# HMAC_SECRET_TEMPLATE and SIGNING_KEY_TEMPLATE stand for the templates that
+# read secrets/oidc_hmac_secret and secrets/oidc/private.pem; the README has
+# the exact text (it cannot be written here, not even in a comment,
 # because the template filter evaluates the whole file).
 #
 # Each client_secret is the digest of a random secret, never the secret itself:
@@ -109,6 +111,7 @@ notifier:
 
 # identity_providers:
 #   oidc:
+#     hmac_secret: HMAC_SECRET_TEMPLATE
 #     jwks:
 #       - key_id: 'main'
 #         algorithm: 'RS256'

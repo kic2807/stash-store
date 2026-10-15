@@ -141,7 +141,6 @@ commands fail with `Unable to find image 'authelia:latest'`.
         -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
         -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
         -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
-        -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
         -v $D/config:/config -v $D/secrets:/secrets:ro authelia/authelia:4.39.28 \
         authelia validate-config --config /config/configuration.yml
       ```
@@ -234,18 +233,14 @@ the first app:
    Replace `$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST` with the Digest (keep the
    single quotes). Keep the indentation exactly as it is.
 
-   First time only, replace `SIGNING_KEY_TEMPLATE` in the `jwks` block with
-   this exact text (it reads `secrets/oidc/private.pem`):
-
-   ```
-   {{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}
-   ```
-
-   or with sed:
+   First time only, put in the templates that read the OIDC secrets
+   (`secrets/oidc_hmac_secret` and `secrets/oidc/private.pem`) in place of
+   `HMAC_SECRET_TEMPLATE` and `SIGNING_KEY_TEMPLATE`:
 
    ```sh
-   sed -i 's#SIGNING_KEY_TEMPLATE#{{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}#' \
-     ~/umbrel/app-data/stash-authelia/data/config/configuration.yml
+   C=~/umbrel/app-data/stash-authelia/data/config/configuration.yml
+   sed -i 's#HMAC_SECRET_TEMPLATE#{{ secret "/secrets/oidc_hmac_secret" | msquote }}#' $C
+   sed -i 's#SIGNING_KEY_TEMPLATE#{{ secret "/secrets/oidc/private.pem" | mindent 10 "|" | msquote }}#' $C
    ```
 
    Never put `{{ ... }}` anywhere else in the file, comments included.

@@ -25,7 +25,9 @@ services:
       AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/jwt_secret
       AUTHELIA_SESSION_SECRET_FILE: /secrets/session_secret
       AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/storage_encryption_key
-      AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE: /secrets/oidc_hmac_secret
+      # The OIDC HMAC secret and signing key are read in configuration.yml once
+      # OIDC is enabled; as an env var here it would switch OIDC on and make
+      # Authelia refuse to start without OIDC clients.
     volumes:
       # configuration.yml, users_database.yml (not in git; see *.example.yml)
       - ${APP_DATA_DIR}/data/config:/config
