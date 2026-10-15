@@ -53,6 +53,8 @@ jobs:
           validate || {
             echo "== rendered (throwaway secrets), OIDC part"
             docker run --rm -e X_AUTHELIA_CONFIG_FILTERS=template -v "$PWD/cfg:/config" -v "$PWD/secrets:/secrets:ro" \
-              "$image" authelia config template --config /config/configuration.yml | sed -n '/^identity_providers/,/client_id/p' | grep -v -E '^ {10}[A-Za-z0-9+/=]{20,}' | cat -A | cut -c1-40
+              "$image" authelia config template --config /config/configuration.yml > rendered.yml || true
+            grep -v -E '^ {10}[A-Za-z0-9+/=]{20,}' rendered.yml | sed -E 's/[0-9a-f]{16,}/HEX/g' | nl -ba | sed -n '1,8p;/identity_providers/,/client_id/p' | cat -A | cut -c1-80
+            grep -n -E 'hmac_secret|^ {10}-----' rendered.yml | sed -E 's/[0-9a-f]{16,}/HEX/g' | cat -A
             exit 1
           }
