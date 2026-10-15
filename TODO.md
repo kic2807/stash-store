@@ -38,7 +38,7 @@ Placeholders only: `<domain>` is the real domain, kept out of git.
       DDNS `DOMAINS`; optional Pocket ID client
 - [ ] Optional: Radarr/Sonarr/Prowlarr auth "Disabled for Local Addresses" so
       Tinyauth is the only login (test on Radarr first)
-- [ ] Optional: delete old `stash.casa` DNS records and token access
+- [ ] Optional: delete the old domain's DNS records and token access
 
 ## Notes for later
 
