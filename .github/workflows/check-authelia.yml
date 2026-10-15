@@ -1,0 +1,40 @@
+name: Check Authelia config
+
+# Runs `authelia validate-config` on stash-authelia's configuration.example.yml
+# with the image pinned in its docker-compose.yml and throwaway secrets.
+
+on:
+  push:
+    branches: [main]
+    paths: [stash-authelia/**]
+  pull_request:
+    paths: [stash-authelia/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate
+        run: |
+          image=$(sed -n 's/^ *image: *//p' stash-authelia/docker-compose.yml | head -1)
+          echo "image: $image"
+          mkdir -p cfg secrets/oidc
+          cp stash-authelia/configuration.example.yml cfg/configuration.yml
+          cp stash-authelia/users_database.example.yml cfg/users_database.yml
+          for f in jwt_secret session_secret storage_encryption_key oidc_hmac_secret; do
+            openssl rand -hex 32 > "secrets/$f"
+          done
+          openssl genrsa -out secrets/oidc/private.pem 2048
+          docker run --rm -e X_AUTHELIA_CONFIG_FILTERS=template \
+            -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/jwt_secret \
+            -e AUTHELIA_SESSION_SECRET_FILE=/secrets/session_secret \
+            -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/storage_encryption_key \
+            -e AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/oidc_hmac_secret \
+            -v "$PWD/cfg:/config" -v "$PWD/secrets:/secrets:ro" "$image" \
+            authelia validate-config --config /config/configuration.yml
