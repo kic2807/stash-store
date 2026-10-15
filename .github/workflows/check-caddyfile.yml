@@ -26,9 +26,11 @@ jobs:
           echo "image: $image"
           for f in stash-caddy/Caddyfile.example stash-caddy/data/etc/Caddyfile; do
             echo "== $f"
-            # Dummy values: validate loads the Cloudflare module but does not call the API.
+            docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" "$image" caddy fmt --diff /etc/caddy/Caddyfile || true
+            # Dummy values: validate loads the Cloudflare module (which checks the
+            # token's format) but does not call the API.
             docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" \
-              -e CLOUDFLARE_API_TOKEN=dummy-token-for-validation -e ACME_EMAIL=ci@example.com \
+              -e CLOUDFLARE_API_TOKEN=0000000000000000000000000000000000000000 -e ACME_EMAIL=ci@example.com \
               -e LAN_CIDR=192.168.1.0/24 \
               "$image" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
           done
