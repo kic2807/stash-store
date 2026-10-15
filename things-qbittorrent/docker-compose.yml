@@ -63,10 +63,11 @@ services:
     # The exit node is given by MagicDNS name (EXIT_NODE), which only resolves
     # once tailscaled has its peer list, so it cannot go into `tailscale up`
     # (TS_EXTRA_ARGS). This wrapper starts the image's own containerboot and,
-    # once the node is up (containerboot's /healthz), keeps the exit node set:
-    # every 10 s, if no exit node is configured, it runs `tailscale set` again.
-    # That covers the first start, every restart, and the window in which
-    # containerboot's `tailscale up --reset` could clear an early `set`.
+    # once the node is up (containerboot's /healthz), checks every 60 s whether
+    # traffic really leaves through Mullvad (am.i.mullvad.net). If not, it runs
+    # `tailscale set` again, which also looks the name up again (new IP).
+    # `tailscale status` does not report Mullvad exit nodes (no ExitNodeStatus),
+    # so Mullvad's own check is used instead.
     # SIGTERM is passed on to containerboot for a clean stop.
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -78,25 +79,27 @@ services:
           (
             until wget -q -O /dev/null http://127.0.0.1:9002/healthz; do sleep 2; done
             while true; do
-              if ! tailscale --socket=/tmp/tailscaled.sock status --json | grep -q '"ExitNodeStatus"'; then
+              if ! wget -T 10 -qO- https://am.i.mullvad.net/json 2>/dev/null | grep -q '"mullvad_exit_ip":true'; then
                 tailscale --socket=/tmp/tailscaled.sock set --exit-node="$$EXIT_NODE" --exit-node-allow-lan-access=true \
                   && echo "exit node set: $$EXIT_NODE"
+                sleep 10
+                continue
               fi
-              sleep 10
+              sleep 60
             done
           ) &
         else
           echo "EXIT_NODE is not set in .env: no exit node, qBittorrent will not start"
         fi
         wait $$boot
-    # Healthy only while the exit node is set and online. qBittorrent waits for
-    # this before it starts.
+    # Healthy only while traffic leaves through a Mullvad exit node, checked
+    # with Mullvad's own service. qBittorrent waits for this before it starts.
     healthcheck:
-      test: ["CMD-SHELL", "tailscale --socket=/tmp/tailscaled.sock status --json | grep -A3 '\"ExitNodeStatus\"' | grep -q '\"Online\": true'"]
-      interval: 15s
-      timeout: 5s
-      retries: 4
-      start_period: 60s
+      test: ["CMD-SHELL", "wget -T 10 -qO- https://am.i.mullvad.net/json | grep -q '\"mullvad_exit_ip\":true'"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.2.4_v2.0.15-ls480@sha256:97333cc1ccf903e0bbcd8eb67e3332e4970e9c1ecabe145e499e9c0847ebcaed

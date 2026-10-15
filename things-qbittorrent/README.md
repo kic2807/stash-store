@@ -37,24 +37,38 @@ address changes.
   hostname while Tailscale is starting up*.
 - **How it is set:** the `tailscale` service runs a small wrapper around the
   image's own `containerboot`. Once the node is up (containerboot's
-  `/healthz`), it checks every 10 s and runs
+  `/healthz`), it checks whether traffic really leaves through Mullvad
+  (`https://am.i.mullvad.net/json`, `"mullvad_exit_ip":true`). If not, it runs
   `tailscale set --exit-node=$EXIT_NODE --exit-node-allow-lan-access=true`
-  whenever no exit node is configured, on every start. A wrapper keeps it in
-  one container with direct access to tailscaled's socket; a separate service
-  would need the socket shared through a volume and its own restart handling.
-- **Why it keeps checking:** containerboot runs `tailscale up --reset` at
-  start. A `set` that lands before that would be wiped, so the loop does not
-  stop after the first success.
-- **`--reset` stays** (now fixed in the compose file, not in `.env`):
-  `tailscale up` refuses to run when persisted settings, such as the exit node
-  from `tailscale set`, are not repeated in its flags. `--reset` clears them
-  at start and the loop sets the exit node again right after, so `.env` stays
-  the single source of truth.
-- **Health:** `tailscale` is healthy only while `tailscale status --json`
-  shows the exit node with `"Online": true`. qBittorrent starts only after
-  that. If the exit node goes offline later, the container turns unhealthy
+  and checks again after 10 s; while connected it checks every 60 s. Each
+  `set` looks the name up again, so a changed exit node IP is picked up. A
+  wrapper keeps this in one container with direct access to tailscaled's
+  socket; a separate service would need the socket shared through a volume
+  and its own restart handling.
+- **Why Mullvad's check and not `tailscale status`:** with a Mullvad exit node
+  set and working, `tailscale status --json` still had no `ExitNodeStatus`
+  (tested), so a check based on it never passed. Mullvad's service tests the
+  real traffic path. This ties the app to Mullvad exit nodes: any other exit
+  node never counts as healthy.
+- **`--reset` stays** (fixed in the compose file, not in `.env`):
+  containerboot runs `tailscale up` on every start, and `up` refuses to run
+  when persisted settings, such as the exit node from `tailscale set`, are not
+  repeated in its flags. `--reset` clears them at start and the wrapper sets
+  the exit node again right after, so `.env` stays the single source of truth.
+- **Health:** `tailscale` is healthy only while Mullvad's check says the
+  traffic leaves through Mullvad (every 30 s). qBittorrent starts only after
+  that. If the exit node goes away later, the container turns unhealthy
   (visible in `sudo docker ps`); qBittorrent keeps running but its torrents
   are bound to `tailscale0`, so they stop (see Kill switch).
+- **Mullvad nodes must be visible to this device.** If
+  `tailscale exit-node list | grep -c mullvad` inside the container prints 0,
+  Tailscale is not sending Mullvad nodes to it: check Settings → Mullvad VPN
+  in the admin console (the device must be on the list) and that the ACL
+  allows `autogroup:internet`. Nothing in the app can fix that.
+- **A failed install leaves containers running.** umbrelOS forgets the app but
+  does not stop `net` and `tailscale`. Before installing again:
+  `sudo docker rm -f $(sudo docker ps -aq --filter name=things-qbittorrent_)`
+  (keeps the data folder, i.e. `.env` and the node identity).
 
 ## Setup
 
@@ -83,6 +97,7 @@ address changes.
    ```sh
    sudo docker logs things-qbittorrent_tailscale_1 2>&1 | grep 'exit node set'
    sudo docker ps --filter name=things-qbittorrent --format '{{.Names}}  {{.Status}}'
+   sudo docker exec things-qbittorrent_tailscale_1 wget -T 10 -qO- https://am.i.mullvad.net/connected; echo
    ```
 
    `tailscale_1` should show `(healthy)` and `qbittorrent_1` should be `Up`.
