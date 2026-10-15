@@ -1,14 +1,14 @@
 name: Check Caddyfile
 
-# Validates stash-caddy's Caddyfile.example and the placeholder Caddyfile with
-# the image pinned in stash-caddy/docker-compose.yml.
+# Validates things-caddy's Caddyfile.example and the placeholder Caddyfile with
+# the image pinned in things-caddy/docker-compose.yml.
 
 on:
   push:
     branches: [main]
-    paths: [stash-caddy/**]
+    paths: [things-caddy/**]
   pull_request:
-    paths: [stash-caddy/**]
+    paths: [things-caddy/**]
   workflow_dispatch:
 
 permissions:
@@ -22,9 +22,9 @@ jobs:
 
       - name: Validate
         run: |
-          image=$(sed -n 's/^ *image: *//p' stash-caddy/docker-compose.yml | head -1)
+          image=$(sed -n 's/^ *image: *//p' things-caddy/docker-compose.yml | head -1)
           echo "image: $image"
-          for f in stash-caddy/Caddyfile.example stash-caddy/data/etc/Caddyfile; do
+          for f in things-caddy/Caddyfile.example things-caddy/data/etc/Caddyfile; do
             echo "== $f"
             docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" "$image" caddy fmt --diff /etc/caddy/Caddyfile || true
             # Dummy values: validate loads the Cloudflare module (which checks the

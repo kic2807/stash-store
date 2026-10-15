@@ -60,12 +60,12 @@
     }
   },
   "apps": {
-    "stash-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
-    "stash-gitea-act-runner": { "primary": "gitea/runner" },
-    "stash-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
-    "stash-stump": { "primary": "aaronleopold/stump" },
-    "stash-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
-    "stash-pocket-id": { "primary": "pocketid/pocket-id" },
-    "stash-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" }
+    "things-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
+    "things-gitea-act-runner": { "primary": "gitea/runner" },
+    "things-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
+    "things-stump": { "primary": "aaronleopold/stump" },
+    "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
+    "things-pocket-id": { "primary": "pocketid/pocket-id" },
+    "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" }
   }
 }

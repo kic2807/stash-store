@@ -1,9 +1,8 @@
 # Haus Things — Umbrel Community App Store
 
 Custom apps for umbrelOS 2.0 that are not in the official Umbrel App Store.
-Store id `stash`; every app id starts with `stash-`. (The store was renamed
-to Haus Things; the id stays `stash`, because umbrelOS requires app ids to
-start with the store id and changing it would mean reinstalling every app.)
+Store id `things`; every app id starts with `things-` (umbrelOS requires app
+ids to start with the store id).
 
 This repository is public. **No secrets, domains, IPs or account details are
 committed.** Each app reads them from files you create on the Umbrel server.
@@ -13,7 +12,7 @@ committed.** Each app reads them from files you create on the Umbrel server.
 umbrelOS → App Store → `⋯` (top right) → **Community App Stores** → add
 
 ```
-https://github.com/kic2807/stash-store
+https://github.com/kic2807/things-store
 ```
 
 The apps show up under **Haus Things App Store**.
@@ -22,14 +21,14 @@ The apps show up under **Haus Things App Store**.
 
 | App | Version | Port | What | Setup |
 |-----|---------|------|------|-------|
-| [stash-cloudflare-ddns](stash-cloudflare-ddns/README.md) | 1.17.1 | — (30101 placeholder) | Keeps Cloudflare DNS records on this server's public IP. No web UI. | `.env` |
-| [stash-caddy](stash-caddy/README.md) | 2.11.7-1 | 30080, 30443 (30104 placeholder) | Reverse proxy: wildcard certificate (Cloudflare DNS), forward auth for private apps. No web UI. | `.env` + Caddyfile |
-| [stash-pocket-id](stash-pocket-id/README.md) | 2.18.0 | — (30105 placeholder) | Passkey-only sign-in (OIDC provider) at `id.<domain>`. | `.env` + key file, then web setup |
-| [stash-tinyauth](stash-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
-| [stash-gitea-act-runner](stash-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
-| [stash-qbittorrent](stash-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
-| [stash-stump](stash-stump/README.md) | 0.1.10 | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
-| [stash-band-backup](stash-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
+| [things-cloudflare-ddns](things-cloudflare-ddns/README.md) | 1.17.1 | — (30101 placeholder) | Keeps Cloudflare DNS records on this server's public IP. No web UI. | `.env` |
+| [things-caddy](things-caddy/README.md) | 2.11.7-1 | 30080, 30443 (30104 placeholder) | Reverse proxy: wildcard certificate (Cloudflare DNS), forward auth for private apps. No web UI. | `.env` + Caddyfile |
+| [things-pocket-id](things-pocket-id/README.md) | 2.18.0 | — (30105 placeholder) | Passkey-only sign-in (OIDC provider) at `id.<domain>`. | `.env` + key file, then web setup |
+| [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
+| [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
+| [things-qbittorrent](things-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
+| [things-stump](things-stump/README.md) | 0.1.10 | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
+| [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
@@ -70,15 +69,15 @@ Files committed under an app's `data/` are copied on **fresh installs only**.
 ## Fresh umbrelOS install order
 
 1. Add this store.
-2. **stash-cloudflare-ddns** → `.env` → check the log. DNS for the domain now points home.
-3. **stash-caddy** → `.env` + Caddyfile → router 80→30080, 443→30443 → certificate in the log → **client IP test** (required before any private host).
-4. **stash-pocket-id** → key file + `.env` → `https://id.<domain>/setup` (admin + passkey, `admins` group).
-5. **stash-tinyauth** → Pocket ID client → `.env` → open a private host to test.
-6. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
-7. Official **Immich** → **stash-band-backup** → `.env` (Immich API key, BAND login).
+2. **things-cloudflare-ddns** → `.env` → check the log. DNS for the domain now points home.
+3. **things-caddy** → `.env` + Caddyfile → router 80→30080, 443→30443 → certificate in the log → **client IP test** (required before any private host).
+4. **things-pocket-id** → key file + `.env` → `https://id.<domain>/setup` (admin + passkey, `admins` group).
+5. **things-tinyauth** → Pocket ID client → `.env` → open a private host to test.
+6. **things-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
+7. Official **Immich** → **things-band-backup** → `.env` (Immich API key, BAND login).
 8. Uncomment the private hosts in the Caddyfile / connect OIDC apps to Pocket ID one by one.
 
-stash-gitea-act-runner is not part of the install.
+things-gitea-act-runner is not part of the install.
 
 ## Automatic image updates
 
@@ -127,14 +126,14 @@ linux/amd64) from the official `caddy` and `caddy:<ver>-builder` images with
 `xcaddy` and [caddy-dns/cloudflare](https://github.com/caddy-dns/cloudflare)
 (`.github/caddy/Dockerfile`). It only builds when that tag does not exist yet,
 after checking that `dns.providers.cloudflare` is in the binary. The image
-update job then sees the new tag and opens the stash-caddy PR like for any
+update job then sees the new tag and opens the things-caddy PR like for any
 other image; Caddy marks breaking changes in its release notes, so those PRs
 wait for review.
 
 Rebuild by hand: Actions → Build caddy-cloudflare → Run workflow (optionally
 pin versions; tick *force* to overwrite an existing tag).
 
-`stash-band-backup` is not part of this: its image is released by hand from
+`things-band-backup` is not part of this: its image is released by hand from
 the band-backup repo (see its README).
 
 Merged updates only make the update button appear in Umbrel; nothing is
@@ -163,7 +162,7 @@ workflow changes).
 
 ## Rules for new apps
 
-- Directory name = app id = `stash-<name>`.
+- Directory name = app id = `things-<name>`.
 - Persistent data only under `${APP_DATA_DIR}/data/...` bind mounts (directories,
   never single files; no named volumes). Commit `data/<dir>/.gitkeep` for
   empty mount sources.

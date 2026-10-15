@@ -1,0 +1,36 @@
+manifestVersion: 1
+id: things-qbittorrent
+category: networking
+name: qBittorrent
+version: "5.2.4-2"
+tagline: qBittorrent behind a Tailscale exit node
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg
+description: >-
+  qBittorrent. All torrent traffic leaves through a Tailscale exit node.
+
+
+  Before starting, create the .env file described in the store README (TS_AUTHKEY, TS_EXTRA_ARGS) in the app data folder, then restart the app.
+
+
+  Torrents are bound to the tailscale0 interface on new installs, so they stop instead of leaking if the VPN drops. Keep Tools -> Options -> Advanced -> Network interface set to tailscale0.
+releaseNotes: >-
+  Renamed from "qBittorrent (VPN)" to "qBittorrent".
+
+developer: qBittorrent / Tailscale
+website: https://www.qbittorrent.org
+dependencies: []
+repo: https://github.com/kic2807/things-store
+support: https://github.com/kic2807/things-store/issues
+
+port: 30024
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+permissions:
+  - STORAGE_DOWNLOADS
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

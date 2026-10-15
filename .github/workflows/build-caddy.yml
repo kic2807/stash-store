@@ -2,7 +2,7 @@ name: Build caddy-cloudflare
 
 # Builds ghcr.io/kic2807/caddy-cloudflare:<caddy>-cf<plugin> (linux/amd64)
 # when that tag does not exist yet. Runs before "Update images", which then
-# opens the stash-caddy PR for the new tag.
+# opens the things-caddy PR for the new tag.
 
 on:
   schedule:
@@ -81,7 +81,7 @@ jobs:
         run: |
           docker run --rm caddy-cloudflare:test caddy version
           docker run --rm caddy-cloudflare:test caddy list-modules | grep -x dns.providers.cloudflare
-          # Same restrictions as stash-caddy's compose: must start without capabilities.
+          # Same restrictions as things-caddy's compose: must start without capabilities.
           docker run --rm --user 1000:1000 --cap-drop all --security-opt no-new-privileges:true \
             --sysctl net.ipv4.ip_unprivileged_port_start=0 caddy-cloudflare:test caddy version
 

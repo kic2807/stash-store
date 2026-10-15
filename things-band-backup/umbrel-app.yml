@@ -1,0 +1,32 @@
+manifestVersion: 1
+id: things-band-backup
+category: automation
+name: BAND Backup
+version: "2.4.0"
+tagline: Back up BAND photos to Immich and turn schedule photos into events
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-band-backup/icon.png
+description: >-
+  Background service with no web UI. Opening the app from the home screen does nothing; it reports through the Discord webhook.
+
+
+  Mirrors photos and videos from your BAND groups into Immich albums, and turns photos of printed schedules posted in Discord into BAND and Google Calendar events after you approve each one.
+
+
+  Before starting, create the .env file described in the store README in the app data folder, then restart the app.
+releaseNotes: ""
+
+developer: kic2807
+website: https://github.com/kic2807/band-backup
+dependencies: []
+repo: https://github.com/kic2807/band-backup
+support: https://github.com/kic2807/band-backup/issues
+
+port: 30103
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

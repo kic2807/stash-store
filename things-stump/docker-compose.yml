@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: things-stump_server_1
+      APP_PORT: 10801
+      # Stump has its own login. Reader apps (OPDS, Kobo, KOReader, the Stump
+      # mobile app) cannot send Umbrel's login cookie, so their endpoints skip
+      # Umbrel login. The web UI itself stays behind it.
+      PROXY_AUTH_WHITELIST: "/api/*,/opds/*,/kobo/*,/koreader/*"
+
+  server:
+    image: aaronleopold/stump:0.1.10@sha256:a68507ed2a0713d2b6c100df73fe9be142aead75acec667585b518ee04c8978d
+    restart: on-failure
+    environment:
+      # The entrypoint creates this user and chowns /config.
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Seoul
+      STUMP_CONFIG_DIR: /config
+    # Optional STUMP_OIDC_* settings (client secret) come from the app data
+    # .env file; see .env.example.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      # Database, thumbnails, logs
+      - ${APP_DATA_DIR}/data/config:/config
+      # Library. Defaults to Downloads/books; change it in the app's settings
+      # (Folder access -> Books).
+      - ${UMBREL_ROOT}/data/storage/downloads/books:/data

@@ -1,6 +1,0 @@
-# Placeholder written on a fresh install so Caddy starts. It serves nothing.
-# Replace this file with your own, based on Caddyfile.example in the store
-# repository (see stash-caddy/README.md).
-:80 {
-	abort
-}
