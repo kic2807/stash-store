@@ -53,8 +53,8 @@
 	handle @photos {
 		reverse_proxy immich_server_1:2283
 	}
-	@movies host movies.example.com
-	handle @movies {
+	@watch host watch.example.com
+	handle @watch {
 		reverse_proxy jellyfin_server_1:8096
 	}
 	@games host games.example.com
@@ -70,8 +70,8 @@
 	# Open them as https://<name>.example.com:30443 (umbrelOS owns 443 on the LAN).
 	# REQUIRED: keep these commented out until the client IP test in
 	# README.md passes.
-	# @films host films.example.com
-	# handle @films {
+	# @movies host movies.example.com
+	# handle @movies {
 	# 	import private
 	# 	import tinyauth
 	# 	reverse_proxy radarr_server_1:7878

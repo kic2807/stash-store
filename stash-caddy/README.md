@@ -106,7 +106,7 @@ need an app restart instead.
 The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
 `LAN_CIDR` or is `10.21.0.1` (see "What Caddy sees" below). That only works if
 outside clients reach Caddy with their real address. If they arrived as a
-gateway address instead, outside requests could look like local ones. **Do not enable films/shows/search/torrents
+gateway address instead, outside requests could look like local ones. **Do not enable movies/shows/search/torrents
 until all three checks pass.** Tinyauth (Pocket ID passkey sign-in) still
 protects them if this check ever fails, but it must not be the only protection.
 
@@ -200,11 +200,11 @@ Private hosts are opened **with the port in the URL**, from the LAN and from
 Tailscale alike:
 
 ```
-https://films.<domain>:30443
+https://movies.<domain>:30443
 ```
 
 umbrelOS itself listens on 443 on the LAN (`lan-ingress.ts` in the umbrelOS
-source), so `https://films.<domain>` without the port would reach the Umbrel
+source), so `https://movies.<domain>` without the port would reach the Umbrel
 dashboard instead of Caddy. The wildcard certificate is valid on any port, and
 Tinyauth's session cookie (set for `<domain>`) is sent on any port.
 
@@ -242,10 +242,10 @@ Alternatives not used (kept for reference):
 | `id.` | `stash-pocket-id_server_1:1411` | public (Pocket ID) |
 | `login.` | `stash-tinyauth_server_1:3000` | Tinyauth; opened on `:30443` from LAN/Tailscale (DNS-only record, like the private hosts) |
 | `photos.` | `immich_server_1:2283` | public, Immich login / OIDC |
-| `movies.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
+| `watch.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
 | `games.` | `romm_server_1:8080` | public, RomM login / OIDC |
 | `requests.` | `jellyseerr_server_1:5055` | public, Jellyseerr login |
-| `films.` | `radarr_server_1:7878` | private + Tinyauth |
+| `movies.` | `radarr_server_1:7878` | private + Tinyauth |
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `search.` | `prowlarr_server_1:9696` | private + Tinyauth |
 | `torrents.` | `stash-qbittorrent_net_1:30024` | private + Tinyauth |

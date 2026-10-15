@@ -27,7 +27,7 @@ sudo docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' stash-c
 ```
 
 `DOMAINS` holds the **public** hosts only (Pocket ID `id.`, `photos.`,
-`movies.`, …; Tinyauth's `login.` is private). The private hosts are separate DNS-only records (see
+`watch.`, …; Tinyauth's `login.` is private). The private hosts are separate DNS-only records (see
 stash-caddy README). Add a hostname here before opening it in a browser, or
 the router may cache "does not exist" for a while.
 

@@ -6,7 +6,7 @@ sent to [Pocket ID](../stash-pocket-id/README.md), sign in with a passkey, and
 come back.
 
 Protects the apps that have no single sign-on of their own: Radarr
-(`films.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`torrents.`).
+(`movies.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`torrents.`).
 
 It is opened at `https://login.<domain>:30443` through [stash-caddy](../stash-caddy/README.md),
 like the private hosts (LAN or Tailscale only).
@@ -30,7 +30,7 @@ There is no Umbrel home-screen UI: the manifest port 30106 is a placeholder.
   returns to an address it considers safe (`isRedirectSafe`): it compares the
   port first, and only on a matching port falls back to "any subdomain of the
   cookie domain". With `https://login.<domain>` (no port) the return address
-  `https://films.<domain>:30443/` fails with *port mismatch* and you end up on
+  `https://movies.<domain>:30443/` fails with *port mismatch* and you end up on
   Tinyauth's own `/logout` page. Hence `login.<domain>` is a private host too:
   a DNS-only record pointing at the Umbrel's Tailscale address, not in
   cloudflare-ddns (Cloudflare cannot proxy port 30443 anyway).
@@ -75,6 +75,6 @@ Pocket ID must be set up first (admin account, `admins` group).
    sudo docker logs --tail 20 stash-tinyauth_server_1
    ```
 
-5. **Test:** open a private host, e.g. `https://films.<domain>:30443`. You should
-   go to Pocket ID, sign in with the passkey, and land back on films (a 502
+5. **Test:** open a private host, e.g. `https://movies.<domain>:30443`. You should
+   go to Pocket ID, sign in with the passkey, and land back on movies (a 502
    there only means Radarr is not installed yet).
