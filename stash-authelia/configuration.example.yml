@@ -98,10 +98,10 @@ notifier:
 # refuses to start with OIDC enabled and no valid client. To enable it, remove
 # the leading "# " from the identity_providers, oidc, jwks and clients lines
 # and from ONE client block, and put that client's secret digest in.
-# HMAC_SECRET_TEMPLATE and SIGNING_KEY_TEMPLATE stand for the templates that
-# read secrets/oidc_hmac_secret and secrets/oidc/private.pem; the README has
-# the exact text (it cannot be written here, not even in a comment,
-# because the template filter evaluates the whole file).
+# The two ..._TEMPLATE placeholders stand for the templates that read
+# secrets/oidc_hmac_secret and secrets/oidc/private.pem; the README has the
+# sed commands that put them in (template text cannot be written here, not even
+# in a comment, because the template filter evaluates the whole file).
 #
 # Each client_secret is the digest of a random secret, never the secret itself:
 #   sudo docker run --rm authelia/authelia:4.39.28 authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
