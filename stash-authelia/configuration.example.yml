@@ -73,7 +73,9 @@ session:
     - name: 'authelia_session'
       domain: 'example.com'
       authelia_url: 'https://auth.example.com'
-      default_redirection_url: 'https://photos.example.com'
+      # No default_redirection_url: after logging in at the portal directly you
+      # stay on the portal (passkey settings) instead of being sent to an app
+      # that may not be installed yet (502 from Caddy).
       inactivity: '1 day'
       expiration: '1 week'
       remember_me: '1 month'

@@ -129,7 +129,7 @@ commands fail with `Unable to find image 'authelia:latest'`.
       | Key | What to check |
       |-----|---------------|
       | `session.cookies[0].authelia_url` | the Authelia portal, `https://auth.<domain>` |
-      | `session.cookies[0].default_redirection_url` | where to land after logging in at the portal directly |
+      | `session.cookies[0].default_redirection_url` | not set: logging in at the portal directly stays on the portal. Add it (e.g. `https://photos.<domain>`) once that app runs |
       | `access_control.rules` | one entry per subdomain protected through Caddy `forward_auth`; anything not listed is denied |
       | `webauthn.display_name` | name shown in the passkey prompt |
 
