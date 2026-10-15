@@ -9,7 +9,7 @@ description: >-
   qBittorrent. All torrent traffic leaves through a Tailscale exit node, given by its MagicDNS name. qBittorrent starts only once that exit node is online.
 
 
-  Before starting, create the .env file described in the store README (TS_AUTHKEY, EXIT_NODE) in the app data folder, then restart the app.
+  Create ~/umbrel/app-data/things-qbittorrent/data/.env (TS_AUTHKEY, EXIT_NODE) BEFORE installing: qBittorrent only starts once the exit node is online, and an install whose first start fails is dropped. See the app README in the store repository.
 
 
   Torrents are bound to the tailscale0 interface on new installs, so they stop instead of leaking if the VPN drops. Keep Tools -> Options -> Advanced -> Network interface set to tailscale0.

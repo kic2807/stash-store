@@ -61,20 +61,22 @@ address changes.
 1. Tailscale admin console:
    - Settings → Keys → **Generate auth key** (reusable off; tag it if you use ACL tags).
    - Make sure the exit node is approved and the ACL lets this node use it.
-2. Install the app, then on the Umbrel terminal:
+2. **Create `.env` before installing.** qBittorrent only starts once the exit
+   node is online, and umbrelOS drops an install whose first start fails
+   (it hangs at 1% and disappears). The install copies the app's files into
+   the data folder with `rsync` and keeps files already there, so a `.env`
+   created beforehand survives:
 
    ```sh
-   cd ~/umbrel/app-data/things-qbittorrent/data
-   nano .env        # TS_AUTHKEY and EXIT_NODE (keys from .env.example)
-   chmod 600 .env
+   D=~/umbrel/app-data/things-qbittorrent/data
+   mkdir -p $D
+   nano $D/.env     # TS_AUTHKEY and EXIT_NODE (keys from .env.example)
+   chmod 600 $D/.env
    ```
 
-3. Restart the app. In the Tailscale admin console, `umbrel-qbit-node`
-   appears; disable key expiry for it.
-
-   Until `.env` exists the node cannot log in, so `tailscale` never becomes
-   healthy and qBittorrent does not start; the first start may show as
-   failed. That is expected; it starts after `.env` and a restart.
+3. Install the app. Tailscale logs in, the exit node is set and qBittorrent
+   starts, all within the first start. In the Tailscale admin console,
+   `umbrel-qbit-node` appears; disable key expiry for it.
 
    Check that the exit node was set and is online:
 
