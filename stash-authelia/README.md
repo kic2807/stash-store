@@ -5,7 +5,7 @@ every service.
 
 - **Forward auth** through Nginx Proxy Manager (`auth_request`) for apps without
   SSO: Radarr, Sonarr, Prowlarr, qBittorrent, the NPM admin UI.
-- **OpenID Connect provider** for Immich, Gitea, RomM and Jellyfin (SSO plugin).
+- **OpenID Connect provider** for Immich, RomM and Jellyfin (SSO plugin).
 - Single container, SQLite storage, in-memory sessions (no Redis/PostgreSQL).
   Sessions are lost when Authelia restarts; everyone logs in again.
 
@@ -95,7 +95,7 @@ commands fail with `Unable to find image 'authelia:latest'`.
 
    - The login id is what you type on the login page. Lowercase letters are safest.
    - Keep the single quotes around the digest; it contains `$`.
-   - No mail is sent (no SMTP), but Immich/Gitea match OIDC logins by email,
+   - No mail is sent (no SMTP), but Immich matches OIDC logins by email,
      so use the same email as your accounts there.
    - `groups` is only used if `access_control` rules use `group:admins`.
    - Indent with spaces, never tabs.
@@ -267,7 +267,7 @@ Every protected domain also needs a matching rule in `access_control`
 
 ## OIDC clients
 
-Apps that can log in through Authelia: **Immich, Gitea, RomM, Jellyfin** (SSO
+Apps that can log in through Authelia: **Immich, RomM, Jellyfin** (SSO
 plugin), **autobrr** and **Stump**. Radarr, Sonarr, Prowlarr, qBittorrent and NPM have no
 OIDC support; protect them with forward auth instead.
 
@@ -297,7 +297,6 @@ the first app:
 | App | Issuer / discovery | Client ID | Where | Notes |
 |-----|-------------------|-----------|-------|-------|
 | Immich | `https://auth.<domain>/.well-known/openid-configuration` | `immich` | Administration → Settings → Authentication → OAuth | mobile app login uses `app.immich:///oauth-callback` (already in the block) |
-| Gitea | same | `gitea` | Site Administration → Identity & Access → Authentication Sources → Add, type OAuth2, provider OpenID Connect | the source **name must be `authelia`** (it is in the redirect URI) |
 | RomM | `https://auth.<domain>` | `romm` | Umbrel → RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_PROVIDER=authelia`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI=https://romm.<domain>/api/oauth/openid`, `OIDC_SERVER_APPLICATION_URL=https://auth.<domain>` | names from the Authelia RomM guide |
 | Jellyfin | `https://auth.<domain>` | `jellyfin` | Dashboard → Plugins → install **SSO Authentication** (9p4) → add provider named `authelia` | the provider name is in the redirect URI |
 | autobrr | `https://auth.<domain>` | `autobrr` | `~/umbrel/app-data/autobrr/data/config.toml`: `oidcEnabled`, `oidcIssuer`, `oidcClientId`, `oidcClientSecret`, `oidcRedirectUrl = "https://autobrr.<domain>/api/auth/oidc/callback"` | not covered by Authelia's guides; check autobrr's logs |
@@ -305,11 +304,10 @@ the first app:
 
 Authelia's per-app guides:
 [Immich](https://www.authelia.com/integration/openid-connect/clients/immich/),
-[Gitea](https://www.authelia.com/integration/openid-connect/clients/gitea/),
 [RomM](https://www.authelia.com/integration/openid-connect/clients/romm/),
 [Jellyfin](https://www.authelia.com/integration/openid-connect/clients/jellyfin/).
 
-The redirect URIs use `immich.`, `code.`, `romm.`, `jellyfin.`, `autobrr.` and `stump.`
+The redirect URIs use `immich.`, `romm.`, `jellyfin.`, `autobrr.` and `stump.`
 subdomains. If you use other names, change them in both the client block and
 the NPM proxy host.
 

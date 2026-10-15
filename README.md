@@ -21,7 +21,7 @@ The apps show up under **Stash App Store**.
 | App | Version | Port | What | Setup |
 |-----|---------|------|------|-------|
 | [stash-cloudflare-ddns](stash-cloudflare-ddns/README.md) | 1.17.1 | — (30101 placeholder) | Keeps Cloudflare DNS records on this server's public IP. No web UI. | `.env` |
-| [stash-gitea-act-runner](stash-gitea-act-runner/README.md) | 5.0.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. | `.env` |
+| [stash-gitea-act-runner](stash-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [stash-qbittorrent](stash-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
 | [stash-authelia](stash-authelia/README.md) | 4.39.28 | 30091 | SSO with passkeys: NPM forward auth + OIDC provider. | config files + secret files |
 | [stash-stump](stash-stump/README.md) | 0.1.10 | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
@@ -73,12 +73,13 @@ Configuration files under `data/config/` and one secret per file under
 
 1. Add this store.
 2. **stash-cloudflare-ddns** → `.env` → check the log. DNS for the domain now points home.
-3. Official **Nginx Proxy Manager** → proxy hosts + certificates.
-4. **stash-authelia** → secrets, users, config → NPM `auth.` host → register a passkey.
-5. Official **Gitea** → **stash-gitea-act-runner** → `.env` with a runner token.
-6. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
-7. Official **Immich** → **stash-band-backup** → `.env` (Immich API key, BAND login).
-8. Protect apps with NPM forward auth / connect OIDC apps one by one.
+3. **stash-caddy** (reverse proxy, wildcard certificate) — *not in the store yet*.
+4. **stash-authelia** → secrets, users, config → Caddy `auth.` host → register a passkey.
+5. **stash-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
+6. Official **Immich** → **stash-band-backup** → `.env` (Immich API key, BAND login).
+7. Protect apps with Caddy `forward_auth` / connect OIDC apps one by one.
+
+stash-gitea-act-runner is not part of the install.
 
 ## Automatic image updates
 

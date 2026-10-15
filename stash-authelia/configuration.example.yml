@@ -69,7 +69,7 @@ access_control:
         - 'npm.example.com'
       policy: 'two_factor'
 
-    # Apps that use Authelia through OIDC (Immich, Gitea, RomM, Jellyfin) do not
+    # Apps that use Authelia through OIDC (Immich, RomM, Jellyfin, Stump) do not
     # need rules here; their policy is set per client below.
 
 session:
@@ -133,25 +133,6 @@ notifier:
 #           - 'https://immich.example.com/user-settings'
 #           - 'app.immich:///oauth-callback'
 #         scopes: ['openid', 'profile', 'email']
-#         response_types: ['code']
-#         grant_types: ['authorization_code']
-#         access_token_signed_response_alg: 'none'
-#         userinfo_signed_response_alg: 'none'
-#         token_endpoint_auth_method: 'client_secret_basic'
-#
-#       # Gitea (https://www.authelia.com/integration/openid-connect/clients/gitea/)
-#       # Gitea: Site Administration -> Identity & Access -> Authentication Sources
-#       # The source name in Gitea must be "authelia" (it is part of the redirect URI).
-#       - client_id: 'gitea'
-#         client_name: 'Gitea'
-#         client_secret: '$pbkdf2-sha512$310000$REPLACE_WITH_DIGEST'
-#         public: false
-#         authorization_policy: 'one_factor'
-#         require_pkce: false
-#         pkce_challenge_method: ''
-#         redirect_uris:
-#           - 'https://code.example.com/user/oauth2/authelia/callback'
-#         scopes: ['openid', 'email', 'profile']
 #         response_types: ['code']
 #         grant_types: ['authorization_code']
 #         access_token_signed_response_alg: 'none'

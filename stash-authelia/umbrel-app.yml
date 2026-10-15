@@ -6,7 +6,7 @@ version: "4.39.28"
 tagline: Single sign-on with passkeys for all your apps
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/authelia.svg
 description: >-
-  Authelia is the login portal for every service: forward auth through Nginx Proxy Manager for apps without SSO, and an OpenID Connect provider for Immich, Gitea, RomM and Jellyfin.
+  Authelia is the login portal for every service: forward auth through Nginx Proxy Manager for apps without SSO, and an OpenID Connect provider for Immich, RomM and Jellyfin.
 
 
   Authelia will not start until you create its configuration and secrets in the app data folder. Follow the README in the store repository.
