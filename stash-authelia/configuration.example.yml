@@ -5,8 +5,9 @@
 #
 # Secrets are NOT in this file. They are read from /secrets/* via the
 # AUTHELIA_*_FILE variables in docker-compose.yml, and the OIDC signing key via
-# the {{ secret }} template below. Putting a secret here as well makes Authelia
-# refuse to start.
+# the "secret" template function in the jwks block below. Do not write template
+# braces anywhere else, comments included: the template filter evaluates the
+# whole file. Putting a secret here as well makes Authelia refuse to start.
 
 theme: auto
 
