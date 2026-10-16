@@ -11,6 +11,16 @@
 	# account email is optional). With "email you@example.org" here, Caddy
 	# also falls back to ZeroSSL when Let's Encrypt fails.
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+
+	# A plain http:// request on the HTTPS port (e.g. typing
+	# "movies.example.com:30443" without https://) gets a redirect to
+	# https:// instead of "Client sent an HTTP request to an HTTPS server".
+	servers {
+		listener_wrappers {
+			http_redirect
+			tls
+		}
+	}
 }
 
 # Private apps: Tinyauth checks the session and sends visitors to Pocket ID.
