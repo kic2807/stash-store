@@ -27,6 +27,7 @@ The apps show up under **Haus Things App Store**.
 | [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-qbittorrent](things-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
+| [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-stump](things-stump/README.md) | 0.1.10 | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
@@ -40,7 +41,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, qbittorrent, stump, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, qbittorrent, transmission-vpn, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -109,6 +110,7 @@ needed, just **Merge**). A change needs review when:
 | favonia/cloudflare-ddns | GitHub releases | — | minor, patch |
 | gitea/runner | gitea.com releases | — | minor, patch |
 | docker (dind) | moby/moby releases | — | minor, patch |
+| docker (cli, watchdog) | moby/moby releases | — | minor, patch |
 | linuxserver/qbittorrent | qBittorrent releases | — | patch, rebuild |
 | tailscale | none (links only) | — | minor, patch |
 | registry.k8s.io/pause | none | — | all |
@@ -174,7 +176,8 @@ workflow changes).
   With `network_mode: service:<x>`, `APP_HOST` must be the container that owns
   the network namespace.
 - Avoid host ports 80, 443, 2000, 40000–49999 and ports of official apps.
-- Never mount the Docker socket.
+- Never mount the Docker socket, except where the README says why and the
+  owner agreed (things-transmission-vpn watchdog).
 - Pin every image as `tag@sha256:digest`.
 - Secrets and infrastructure details only in server-side files, never in git.
 

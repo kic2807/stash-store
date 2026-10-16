@@ -22,6 +22,12 @@
       "notes": { "github": "qbittorrent/qBittorrent", "tag": "^release-(?P<v>\\d+\\.\\d+\\.\\d+)$" },
       "automerge": ["patch", "build"]
     },
+    "docker@cli": {
+      "_comment": "docker:<ver>-cli, used by watchdog services; same releases as dind.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-cli$",
+      "notes": { "github": "moby/moby", "tag": "^docker-v(?P<v>\\d+\\.\\d+\\.\\d+)$" },
+      "automerge": ["minor", "patch"]
+    },
     "tailscale/tailscale": {
       "_comment": "GitHub release notes only link to tailscale.com/changelog, so the semver fallback applies.",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
@@ -66,6 +72,7 @@
     "things-stump": { "primary": "aaronleopold/stump" },
     "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
     "things-pocket-id": { "primary": "pocketid/pocket-id" },
-    "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" }
+    "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
+    "things-transmission-vpn": { "primary": "tailscale/tailscale" }
   }
 }

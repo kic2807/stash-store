@@ -1,0 +1,30 @@
+manifestVersion: 1
+id: things-transmission-vpn
+category: networking
+name: Transmission VPN
+version: "1.104.1"
+tagline: Route the official Transmission app through a Mullvad exit node
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/transmission.svg
+description: >-
+  Add-on for the official Umbrel Transmission app (it does not replace it). A Tailscale sidecar joins Transmission's network, sends its internet traffic through a Mullvad exit node and blocks everything else with a kill switch. Umbrel apps, Caddy and your LAN still reach Transmission directly.
+
+
+  No web UI: keep using the Transmission icon. Create ~/umbrel/app-data/things-transmission-vpn/data/.env (TS_AUTHKEY, EXIT_NODE) before installing. A watchdog service uses the Docker socket to reattach the sidecar when Transmission is recreated; see the README in the store repository.
+releaseNotes: ""
+
+developer: Tailscale
+website: https://tailscale.com
+dependencies:
+  - transmission
+repo: https://github.com/kic2807/things-store
+support: https://github.com/kic2807/things-store/issues
+
+port: 30107
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

@@ -217,13 +217,17 @@ def plan_app(app, app_cfg):
     compose = compose_path.read_text()
     changes = []
     for _, name, tag, digest in IMAGE_RE.findall(compose):
-        rule = CONFIG["images"].get(name)
-        if not rule:
+        # An image can have several rules for different tag flavours, keyed
+        # "name" and "name@variant" (e.g. docker -dind and docker@cli -cli);
+        # the first whose tag pattern matches the pinned tag applies.
+        rules = [r for k, r in CONFIG["images"].items() if k == name or k.startswith(name + "@")]
+        if not rules:
             continue
-        current = parse_tag(rule, tag)
-        if not current:
+        rule = next((r for r in rules if parse_tag(r, tag)), None)
+        if not rule:
             print(f"  ! {name}:{tag} does not match its tag rule, skipped", file=sys.stderr)
             continue
+        current = parse_tag(rule, tag)
         lookup = rule.get("lookup", name)
         candidates = [(parse_tag(rule, t), t) for t in list_tags(lookup)]
         newest = max(((p, t) for p, t in candidates if p), default=None, key=lambda x: x[0][:2])
@@ -259,7 +263,7 @@ def plan_app(app, app_cfg):
     manifest_path = ROOT / app / "umbrel-app.yml"
     manifest = manifest_path.read_text()
     old_version = re.search(r'^version:\s*"?([^"\n]+)"?\s*$', manifest, re.M).group(1)
-    primary = next((c for c in changes if c["name"] == app_cfg["primary"]), None)
+    primary = next((c for c in changes if c["name"] == app_cfg["primary"].split("@")[0]), None)
     if primary and primary["version"] != old_version.partition("-")[0]:
         new_version = primary["version"]
     else:
