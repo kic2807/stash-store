@@ -29,8 +29,9 @@ Everything lives in `~/umbrel/app-data/things-pocket-id/data/`:
 
    ```sh
    D=~/umbrel/app-data/things-pocket-id/data
-   head -c 32 /dev/urandom | base64 | tr -d '\n' > $D/secrets/encryption_key
-   chmod 600 $D/secrets/encryption_key
+   # Only if there is no key yet: replacing it later makes the database unreadable
+   [ -s $D/secrets/encryption_key ] && echo "key exists, not touching it" || \
+     { head -c 32 /dev/urandom | base64 | tr -d '\n' > $D/secrets/encryption_key; chmod 600 $D/secrets/encryption_key; }
    ls -la $D/secrets
    ```
 
@@ -88,6 +89,32 @@ browser (Pocket ID docs). From the Umbrel, its own WAN address is refused by
 the router (no hairpin), so this works when `id.<domain>` is proxied by
 Cloudflare (orange cloud). If an app cannot fetch the discovery URL, check
 that first. Tinyauth avoids the issue by calling Pocket ID inside Docker.
+
+## Lost or replaced encryption key
+
+Pocket ID reads `secrets/encryption_key` only at start, so a replaced key
+shows up after the next restart as `failed to create JWT service: error
+loading signing key: failed to load key: failed to decrypt key`.
+
+- **Old key still available:** put it back (`printf '%s' '<key>' >
+  secrets/encryption_key`) and restart.
+- **Old key lost:** the key only encrypts two internal rows in the `kv` table
+  (`jwt_private_key.json`, `session_key.json`) and SCIM tokens; users,
+  passkeys, groups and OIDC clients are not encrypted. Stop the app, back up
+  `data/pocket-id.db*`, delete those two rows, start again: Pocket ID creates
+  new keys with the current key file. Everyone signs in again; OIDC clients
+  keep their IDs and secrets and pick up the new signing key automatically.
+
+  ```sh
+  D=~/umbrel/app-data/things-pocket-id/data
+  sudo docker stop things-pocket-id_server_1
+  sudo mkdir -p $D/backup && sudo cp -a $D/data/pocket-id.db* $D/backup/
+  sudo docker run --rm -v $D/data:/data alpine:3.22 sh -c "apk add -q sqlite >/dev/null &&
+    sqlite3 /data/pocket-id.db \"DELETE FROM kv WHERE key IN ('jwt_private_key.json','session_key.json');\""
+  ```
+
+To change the key on purpose, use Pocket ID's `encryption-key-rotate`
+command instead of overwriting the file.
 
 ## Updating
 
