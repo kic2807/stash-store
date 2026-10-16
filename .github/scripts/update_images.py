@@ -19,6 +19,7 @@ Without --apply it only prints what it would do.
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
@@ -223,7 +224,27 @@ def plan_app(app, app_cfg):
         rules = [r for k, r in CONFIG["images"].items() if k == name or k.startswith(name + "@")]
         if not rules:
             continue
-        rule = next((r for r in rules if parse_tag(r, tag)), None)
+        # Moving tags (e.g. "nightly"): same tag, new image. Follow the digest
+        # and stamp the version with the time the change was found.
+        moving = next((r for r in rules if r.get("moving") == tag), None)
+        if moving:
+            lookup = moving.get("lookup", name)
+            new_digest, platforms = index_digest(lookup, tag)
+            if new_digest == digest:
+                continue
+            if "linux/amd64" not in platforms:
+                print(f"  ! {name}:{tag} has no linux/amd64 image, skipped", file=sys.stderr)
+                continue
+            stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d%H%M")
+            changes.append({
+                "name": name, "old": f"{name}:{tag}@{digest}", "new": f"{name}:{tag}@{new_digest}",
+                "old_tag": f"{tag} {digest[7:19]}", "new_tag": f"{tag} {new_digest[7:19]}",
+                "version": f"{tag}-{stamp}", "kind": "build",
+                "automerge": "build" in moving.get("automerge", []),
+                "reason": "new " + tag + " build (moving tag, no release notes)", "breaking": [],
+            })
+            continue
+        rule = next((r for r in rules if "tag" in r and parse_tag(r, tag)), None)
         if not rule:
             print(f"  ! {name}:{tag} does not match its tag rule, skipped", file=sys.stderr)
             continue

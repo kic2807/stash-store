@@ -38,6 +38,11 @@
       "tag": "^(?P<v>\\d+\\.\\d+(?:\\.\\d+)?)$",
       "automerge": ["major", "minor", "patch"]
     },
+    "aaronleopold/stump@nightly": {
+      "_comment": "Stump is pinned to the moving 'nightly' tag: the digest is followed and the version becomes nightly-<UTC time found>.",
+      "moving": "nightly",
+      "automerge": ["build"]
+    },
     "aaronleopold/stump": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
       "notes": { "github": "stumpapp/stump" },

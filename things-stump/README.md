@@ -3,6 +3,16 @@
 [Stump](https://github.com/stumpapp/stump): comics, manga and ebook server with
 OPDS, Kobo and KOReader sync, and a mobile app.
 
+## Nightly builds
+
+This app runs Stump's **nightly** image (`aaronleopold/stump:nightly`, pinned
+by digest). The store's update job follows that tag: when a new nightly is
+published it re-pins the digest and sets the version to
+`nightly-<UTC time found>`, so Umbrel shows an update. Nightlies can break or
+migrate the database in ways an older build cannot read; back up
+`data/config/` before updating if your library matters, and there is no way
+back to the 0.1.x release with the same data.
+
 ## Layout
 
 | Host (`~/umbrel/app-data/things-stump/data/` unless noted) | Container | What |

@@ -9,7 +9,7 @@ folderAccess:
         targetPath: /data
 category: media
 name: Stump
-version: "0.1.10"
+version: "nightly-20261016"
 tagline: Comics, manga and digital book server with OPDS
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/stump.svg
 description: >-
@@ -20,7 +20,8 @@ description: >-
 
 
   Reader apps use the same address and port. Their endpoints (/opds, /api, /kobo, /koreader) skip Umbrel login and use Stump's own login.
-releaseNotes: ""
+releaseNotes: >-
+  Switched to Stump nightly builds (aaronleopold/stump:nightly). The image is re-pinned automatically when a new nightly appears.
 
 developer: Stump
 website: https://www.stumpapp.dev
