@@ -4,7 +4,7 @@ category: networking
 name: Transmission VPN
 version: "1.104.1"
 tagline: Route the official Transmission app through a Mullvad exit node
-icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/transmission.svg
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/private-internet-access.svg
 description: >-
   Add-on for the official Umbrel Transmission app (it does not replace it). A Tailscale sidecar joins Transmission's network, sends its internet traffic through a Mullvad exit node and blocks everything else with a kill switch. Umbrel apps, Caddy and your LAN still reach Transmission directly.
 
