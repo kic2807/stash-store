@@ -86,8 +86,8 @@
 	# 	import tinyauth
 	# 	reverse_proxy sonarr_server_1:8989
 	# }
-	# @search host search.example.com
-	# handle @search {
+	# @indexer host indexer.example.com
+	# handle @indexer {
 	# 	import private
 	# 	import tinyauth
 	# 	reverse_proxy prowlarr_server_1:9696

@@ -6,7 +6,7 @@ sent to [Pocket ID](../things-pocket-id/README.md), sign in with a passkey, and
 come back.
 
 Protects the apps that have no single sign-on of their own: Radarr
-(`movies.`), Sonarr (`shows.`), Prowlarr (`search.`), qBittorrent (`download.`).
+(`movies.`), Sonarr (`shows.`), Prowlarr (`indexer.`), qBittorrent (`download.`).
 
 It is opened at `https://login.<domain>:30443` through [things-caddy](../things-caddy/README.md),
 like the private hosts (LAN or Tailscale only).
