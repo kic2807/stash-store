@@ -45,7 +45,7 @@ watchdog **recreates** the sidecar with the same command umbrelOS uses
 (`docker compose --project-name things-transmission-vpn … up -d --no-deps
 --force-recreate tailscale`, this app's own compose file). It reacts to
 Transmission's `start` event within about a second and also checks every
-10 s (boot order, missed events): if Transmission runs and the sidecar is not
+3 s (boot order, missed events): if Transmission runs and the sidecar is not
 running or joined to an older Transmission ID, it recreates it. The new
 sidecar's first action is the kill switch.
 
@@ -132,7 +132,7 @@ step 5.
    The `curl` must fail (rejected), and an active torrent stops. Start both
    again (restart the app) and repeat test 2.
 4. **Reattach after a Transmission restart:** restart the Transmission app;
-   within ~10 s the watchdog logs `recreating`
+   within a few seconds the watchdog logs `recreating`
    (`sudo docker logs things-transmission-vpn_watchdog_1`). Repeat test 2.
 5. **Reboot** the Umbrel, then repeat test 2.
 6. **Radarr/Sonarr → Transmission** test passes, and the Umbrel UI opens

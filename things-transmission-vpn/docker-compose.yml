@@ -15,7 +15,7 @@ services:
   # container by ID, so the sidecar must be recreated, not restarted: the
   # watchdog runs the same `docker compose --project-name <app id>` umbrelOS
   # uses, for the tailscale service only. It reacts to Transmission's start
-  # event and also checks every 10 s. Needs the Docker socket, i.e.
+  # event and also checks every 3 s. Needs the Docker socket, i.e.
   # root-level access to the host; see README.
   watchdog:
     image: docker:29.9.0-cli@sha256:1a4c7cb63513f349bdad01fcc6e0f3f2f67d37b9da86f14dc0d4a0942eecda00
@@ -53,9 +53,14 @@ services:
         rmdir /tmp/lock 2>/dev/null
         echo "watching $$T"
         check
-        ( docker events --filter type=container --filter container=$$T --filter event=start --format '{{.ID}}' \
-            | while read -r _; do check; done ) &
-        while true; do sleep 10; check; done
+        # Event listener (about 1 s reaction), restarted if it ever exits.
+        ( while true; do
+            docker events --filter type=container --filter container=$$T --filter event=start --format '{{.Actor.ID}}' \
+              | while read -r _; do check; done
+            echo "$$(date -Iseconds) docker events stopped, restarting it"; sleep 2
+          done ) &
+        # Backup check (boot order, missed events).
+        while true; do sleep 3; check; done
 
   tailscale:
     image: tailscale/tailscale:v1.104.1@sha256:87c55d6be56ad85b3d8bceca5f87f73de288c609131460dd1be1874c250cc41d
