@@ -5,7 +5,7 @@ version: "3.7"
 
 services:
   dind:
-    image: docker:29.9.0-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+    image: docker:29.9.1-dind@sha256:3e5756e2b6dad6a5f1f5deacf0a19f9eaa2581b76ae092b2d4a118162e1d4d4e
     # Docker-in-Docker needs privileged mode to run job containers. This is an
     # isolated daemon; the host Docker socket is never mounted.
     privileged: true
@@ -25,7 +25,7 @@ services:
       - ${APP_DATA_DIR}/data/dind:/var/lib/docker
 
   runner:
-    image: gitea/runner:5.1.0@sha256:f390f1c781b4a77f7bdac148251800b618e8a3401c2696045894e3accf23ceed
+    image: gitea/runner:5.1.1@sha256:2966f97fd3897a62f5f92e91255b0a886039051eff6f058b2292f10e28137ea1
     network_mode: service:dind
     restart: on-failure
     depends_on:
