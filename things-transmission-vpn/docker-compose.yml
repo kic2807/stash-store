@@ -10,43 +10,59 @@ version: "3.7"
 # is a placeholder.
 
 services:
-  # Reattaches the sidecar when Transmission is recreated (updates) or starts
-  # later than this app (boot). Needs the Docker socket, i.e. root-level access
-  # to the host; see README.
+  # Reattaches the sidecar when Transmission is recreated (Umbrel stop/start,
+  # updates) or starts later than this app (boot). Docker stores the joined
+  # container by ID, so the sidecar must be recreated, not restarted: the
+  # watchdog runs the same `docker compose --project-name <app id>` umbrelOS
+  # uses, for the tailscale service only. It reacts to Transmission's start
+  # event and also checks every 10 s. Needs the Docker socket, i.e.
+  # root-level access to the host; see README.
   watchdog:
     image: docker:29.9.0-cli@sha256:1a4c7cb63513f349bdad01fcc6e0f3f2f67d37b9da86f14dc0d4a0942eecda00
     restart: on-failure
     network_mode: none
+    environment:
+      APP_DATA_DIR: ${APP_DATA_DIR}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      # This app's own compose file (and .env) for the recreate.
+      - ${APP_DATA_DIR}:${APP_DATA_DIR}:ro
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         T=transmission_server_1
         S=things-transmission-vpn_tailscale_1
-        echo "watching $$T"
-        while true; do
-          t=$$(docker inspect -f '{{.State.Running}} {{.State.StartedAt}}' $$T 2>/dev/null || echo "false -")
-          s=$$(docker inspect -f '{{.State.Running}} {{.State.StartedAt}}' $$S 2>/dev/null || echo "missing -")
+        recreate() {
+          set -- -f "$$APP_DATA_DIR/docker-compose.yml"
+          U="$$APP_DATA_DIR/docker-compose.umbrel-user-settings.yml"
+          [ -f "$$U" ] && set -- "$$@" -f "$$U"
+          docker compose --project-name things-transmission-vpn "$$@" up -d --no-deps --force-recreate tailscale
+        }
+        check() {
+          mkdir /tmp/lock 2>/dev/null || return 0
+          t=$$(docker inspect -f '{{.Id}} {{.State.Running}}' $$T 2>/dev/null || echo "- false")
+          s=$$(docker inspect -f '{{.HostConfig.NetworkMode}} {{.State.Running}}' $$S 2>/dev/null || echo "- false")
           set -- $$t $$s
-          # $$1/$$2: Transmission running/started, $$3/$$4: sidecar running/started
-          if [ "$$1" = true ]; then
-            if [ "$$3" = false ]; then
-              echo "$$(date -Iseconds) sidecar not running: starting it"
-              docker start $$S >/dev/null
-            elif [ "$$3" = true ] && [ "$$4" \< "$$2" ]; then
-              echo "$$(date -Iseconds) $$T was (re)started after the sidecar: reattaching"
-              docker restart -t 10 $$S >/dev/null
-            fi
+          # $$1/$$2: Transmission id/running, $$3/$$4: sidecar network mode/running
+          if [ "$$2" = true ] && { [ "$$3" != "container:$$1" ] || [ "$$4" != true ]; }; then
+            echo "$$(date -Iseconds) sidecar not attached to the running $$T: recreating"
+            recreate
           fi
-          sleep 3
-        done
+          rmdir /tmp/lock
+        }
+        rmdir /tmp/lock 2>/dev/null
+        echo "watching $$T"
+        check
+        ( docker events --filter type=container --filter container=$$T --filter event=start --format '{{.ID}}' \
+            | while read -r _; do check; done ) &
+        while true; do sleep 10; check; done
 
   tailscale:
     image: tailscale/tailscale:v1.104.1@sha256:87c55d6be56ad85b3d8bceca5f87f73de288c609131460dd1be1874c250cc41d
     # Transmission's network namespace (official app, container name checked
-    # in getumbrel/umbrel-apps). Docker looks the name up at every start, so a
-    # restart joins a recreated Transmission. `hostname:` is not allowed here.
+    # in getumbrel/umbrel-apps). Docker resolves the name to the container ID
+    # when this container is created, so after Transmission is recreated the
+    # watchdog recreates this service. `hostname:` is not allowed here.
     network_mode: "container:transmission_server_1"
     restart: on-failure
     depends_on:

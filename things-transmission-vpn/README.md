@@ -37,25 +37,31 @@ way as in things-qbittorrent. `--reset` stays in `TS_EXTRA_ARGS` because
 containerboot runs `tailscale up` on every start.
 
 **Reattaching.** A container joined with `container:<name>` keeps the
-namespace it started in. When Transmission is recreated (every update), it
-gets a new, empty namespace: no VPN and no kill switch. Docker looks the name
-up again on every start, so restarting the sidecar joins the new one, but
-Docker's restart policy gives up after one failed start
-(`daemon/monitor.go`), so it cannot do this by itself. The watchdog checks
-every 3 s: if Transmission runs and the sidecar is stopped, or Transmission
-started after the sidecar, it starts/restarts the sidecar. This also covers a
-boot where this app comes up before Transmission.
+namespace it was created in: Docker resolves the name to the container **ID**
+at creation. Umbrel's stop/start and every update **recreate** Transmission
+(new ID, new empty namespace: no VPN, no kill switch), and the sidecar can
+then no longer even start (`No such container: <old id>`; tested). So the
+watchdog **recreates** the sidecar with the same command umbrelOS uses
+(`docker compose --project-name things-transmission-vpn … up -d --no-deps
+--force-recreate tailscale`, this app's own compose file). It reacts to
+Transmission's `start` event within about a second and also checks every
+10 s (boot order, missed events): if Transmission runs and the sidecar is not
+running or joined to an older Transmission ID, it recreates it. The new
+sidecar's first action is the kill switch.
 
 > **Docker socket:** the watchdog mounts `/var/run/docker.sock`, which gives
 > it root-level control over the host's Docker. It runs with no network
-> (`network_mode: none`) and only runs `docker inspect`, `docker start` and
-> `docker restart` on the two containers named in its script.
+> (`network_mode: none`), mounts this app's folder read-only, and only runs
+> `docker inspect`, `docker events` and `docker compose … up` for this app's
+> `tailscale` service.
 
-**Fail-closed layer in Transmission.** Between Transmission being recreated
-and the watchdog reattaching (a few seconds), Transmission has no kill
-switch. Binding Transmission to this node's Tailscale address closes that
-gap for peer connections: without `tailscale0` that address does not exist.
-See setup step 5.
+**Bind address in Transmission (partial).** Setting Transmission's
+`bind-address-ipv4` to this node's Tailscale address stops **peer**
+connections while the sidecar is missing (the address does not exist then).
+It does **not** cover tracker announces, which Transmission sends over HTTP
+without that binding: in a test with the sidecar detached, ipleak.net still
+saw the home IP. Keep it as an extra layer, not as the protection. See setup
+step 5.
 
 ## Setup
 
@@ -115,8 +121,8 @@ See setup step 5.
 2. **Torrent IP:** on [ipleak.net](https://ipleak.net), "Torrent Address
    detection" → copy the magnet link → add it in Transmission. ipleak.net
    must show a **Mullvad** address, not your home IP. Remove the torrent.
-3. **Kill switch:** stop the watchdog first (it would restart the sidecar
-   within 3 s), then the sidecar:
+3. **Kill switch:** stop the watchdog first (it would recreate the sidecar
+   within seconds), then the sidecar:
 
    ```sh
    sudo docker stop things-transmission-vpn_watchdog_1 things-transmission-vpn_tailscale_1
@@ -126,7 +132,7 @@ See setup step 5.
    The `curl` must fail (rejected), and an active torrent stops. Start both
    again (restart the app) and repeat test 2.
 4. **Reattach after a Transmission restart:** restart the Transmission app;
-   within ~10 s the watchdog logs `reattaching`
+   within ~10 s the watchdog logs `recreating`
    (`sudo docker logs things-transmission-vpn_watchdog_1`). Repeat test 2.
 5. **Reboot** the Umbrel, then repeat test 2.
 6. **Radarr/Sonarr → Transmission** test passes, and the Umbrel UI opens
@@ -134,11 +140,12 @@ See setup step 5.
 
 ## Known limits
 
-- **Gap after Transmission is recreated:** a few seconds until the watchdog
-  reattaches. Step 5 (bind address) blocks peer traffic in that gap; pause
-  torrents before updating Transmission to be safe. Whether HTTP tracker
-  announces honour the bind address has to be checked with test 2 after an
-  update.
+- **Gap after Transmission is recreated:** about 1–2 s from Transmission's
+  start until the recreated sidecar has the kill switch in place. Transmission
+  usually needs longer to load torrents and announce, but this is not
+  guaranteed; tracker announces in that gap would use the home IP (the bind
+  address does not cover them). **Pause torrents before updating or
+  restarting Transmission.**
 - **DNS:** Transmission's lookups (tracker host names) go to Docker's DNS and
   from there through your router, not through Mullvad (`TS_ACCEPT_DNS=false`).
   The connections themselves go through Mullvad.
