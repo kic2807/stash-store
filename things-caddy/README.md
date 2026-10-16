@@ -249,12 +249,11 @@ Alternatives not used (kept for reference):
 | `movies.` | `radarr_server_1:7878` | private + Tinyauth |
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `indexer.` | `prowlarr_server_1:9696` | private + Tinyauth |
-| `download.` | `things-qbittorrent_net_1:30024` | private + Tinyauth |
+| `download.` | `transmission_server_1:9091` | private + Tinyauth |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked
-2026-10-15). qBittorrent's target is `net_1`, the container that owns the
-network namespace in things-qbittorrent.
+2026-10-15).
 
 ### Check container names
 

@@ -4,7 +4,7 @@
 signs users in with **passkeys only** (no passwords).
 
 - Apps with OIDC (Immich, Jellyfin, RomM, Stump) log in through it directly.
-- Apps without it (Radarr, Sonarr, Prowlarr, qBittorrent) are protected by
+- Apps without it (Radarr, Sonarr, Prowlarr, Transmission) are protected by
   [things-tinyauth](../things-tinyauth/README.md), which signs in through Pocket ID.
 
 It is opened at `https://id.<domain>` through [things-caddy](../things-caddy/README.md).

@@ -26,7 +26,6 @@ The apps show up under **Haus Things App Store**.
 | [things-pocket-id](things-pocket-id/README.md) | 2.18.0 | — (30105 placeholder) | Passkey-only sign-in (OIDC provider) at `id.<domain>`. | `.env` + key file, then web setup |
 | [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
-| [things-qbittorrent](things-qbittorrent/README.md) | 5.2.4 | 30024 | qBittorrent behind a Tailscale exit node. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
@@ -41,7 +40,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, qbittorrent, transmission-vpn, stump, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -60,7 +59,7 @@ the next restart.
 
 `env_file` only sets container environment variables; it cannot fill in
 `${...}` inside `docker-compose.yml`. A value needed inside a command is read
-at runtime instead (for example qBittorrent's `EXIT_NODE`, used by a shell
+at runtime instead (for example Transmission VPN's `EXIT_NODE`, used by a shell
 wrapper as `$$EXIT_NODE`). A variable set under `environment:` in the compose
 file wins over the same name in `.env`.
 
@@ -75,7 +74,7 @@ Files committed under an app's `data/` are copied on **fresh installs only**.
 3. **things-caddy** → `.env` + Caddyfile → router 80→30080, 443→30443 → certificate in the log → **client IP test** (required before any private host).
 4. **things-pocket-id** → key file + `.env` → `https://id.<domain>/setup` (admin + passkey, `admins` group).
 5. **things-tinyauth** → Pocket ID client → `.env` → open a private host to test.
-6. **things-qbittorrent** → `.env` → check the exit node IP → set the WebUI password.
+6. Official **Transmission** → **things-transmission-vpn** (`.env` before installing) → its README tests (ipleak, kill switch, reattach, reboot).
 7. Official **Immich** → **things-band-backup** → `.env` (Immich API key, BAND login).
 8. Uncomment the private hosts in the Caddyfile / connect OIDC apps to Pocket ID one by one.
 
@@ -90,7 +89,7 @@ image:
 
 - updates `image: tag@sha256:digest` (multi-arch index digest, must include linux/amd64),
 - sets `version` to the primary image's upstream version, or bumps the `-N`
-  revision when only a secondary image changed (e.g. tailscale in qbittorrent),
+  revision when only a secondary image changed (e.g. docker:cli in transmission-vpn),
 - opens a PR on branch `auto-update/<app>`.
 
 The PR is merged automatically unless a change needs review; then it stays
@@ -111,9 +110,7 @@ needed, just **Merge**). A change needs review when:
 | gitea/runner | gitea.com releases | — | minor, patch |
 | docker (dind) | moby/moby releases | — | minor, patch |
 | docker (cli, watchdog) | moby/moby releases | — | minor, patch |
-| linuxserver/qbittorrent | qBittorrent releases | — | patch, rebuild |
 | tailscale | none (links only) | — | minor, patch |
-| registry.k8s.io/pause | none | — | all |
 | aaronleopold/stump (`nightly`) | none: follows the tag's digest | — | every new build |
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
 | ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |

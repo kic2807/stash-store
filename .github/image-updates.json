@@ -16,12 +16,6 @@
       "notes": { "github": "moby/moby", "tag": "^docker-v(?P<v>\\d+\\.\\d+\\.\\d+)$" },
       "automerge": ["minor", "patch"]
     },
-    "lscr.io/linuxserver/qbittorrent": {
-      "lookup": "ghcr.io/linuxserver/qbittorrent",
-      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)_v(?P<lt1>\\d+)\\.(?P<lt2>\\d+)\\.(?P<lt3>\\d+)-ls(?P<ls>\\d+)$",
-      "notes": { "github": "qbittorrent/qBittorrent", "tag": "^release-(?P<v>\\d+\\.\\d+\\.\\d+)$" },
-      "automerge": ["patch", "build"]
-    },
     "docker@cli": {
       "_comment": "docker:<ver>-cli, used by watchdog services; same releases as dind.",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-cli$",
@@ -33,10 +27,6 @@
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
       "even_minor": true,
       "automerge": ["minor", "patch"]
-    },
-    "registry.k8s.io/pause": {
-      "tag": "^(?P<v>\\d+\\.\\d+(?:\\.\\d+)?)$",
-      "automerge": ["major", "minor", "patch"]
     },
     "aaronleopold/stump@nightly": {
       "_comment": "Stump is pinned to the moving 'nightly' tag: the digest is followed and the version becomes nightly-<UTC time found>.",
@@ -73,7 +63,6 @@
   "apps": {
     "things-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
     "things-gitea-act-runner": { "primary": "gitea/runner" },
-    "things-qbittorrent": { "primary": "lscr.io/linuxserver/qbittorrent" },
     "things-stump": { "primary": "aaronleopold/stump" },
     "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
     "things-pocket-id": { "primary": "pocketid/pocket-id" },

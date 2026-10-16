@@ -6,7 +6,7 @@ version: "5.2.0"
 tagline: Pocket ID login in front of apps without single sign-on
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tinyauth.svg
 description: >-
-  Tinyauth is a small forward-auth server. Caddy (things-caddy) asks it before passing a request to Radarr, Sonarr, Prowlarr or qBittorrent; Tinyauth sends visitors to Pocket ID (things-pocket-id) to sign in with a passkey and lets them through afterwards.
+  Tinyauth is a small forward-auth server. Caddy (things-caddy) asks it before passing a request to Radarr, Sonarr, Prowlarr or Transmission; Tinyauth sends visitors to Pocket ID (things-pocket-id) to sign in with a passkey and lets them through afterwards.
 
 
   Opening the app from the home screen does nothing: Tinyauth only works at its own address (https://login.<your domain>:30443) served by things-caddy. Install and set up Pocket ID first, then create the .env file described in the store README and restart the app.

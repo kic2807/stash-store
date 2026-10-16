@@ -106,7 +106,7 @@
 	# handle @download {
 	# 	import private
 	# 	import tinyauth
-	# 	reverse_proxy things-qbittorrent_net_1:30024
+	# 	reverse_proxy transmission_server_1:9091
 	# }
 
 	# Client IP test (README). Remove after the test.

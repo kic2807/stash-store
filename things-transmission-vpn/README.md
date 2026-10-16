@@ -32,8 +32,9 @@ they **stay when the sidecar stops**: Transmission is blocked, not leaked.
 
 **Exit node.** `EXIT_NODE` is a MagicDNS name (e.g.
 `jp-tyo-wg-001.mullvad.ts.net`), set with `tailscale set` once the node is up
-and again whenever Mullvad's own check (`am.i.mullvad.net`) fails, the same
-way as in things-qbittorrent. `--reset` stays in `TS_EXTRA_ARGS` because
+and again whenever Mullvad's own check (`am.i.mullvad.net`) fails;
+`tailscale status` does not report Mullvad exit nodes, so Mullvad's check is
+used instead (tested). `--reset` stays in `TS_EXTRA_ARGS` because
 containerboot runs `tailscale up` on every start.
 
 **Reattaching.** A container joined with `container:<name>` keeps the
@@ -92,7 +93,8 @@ step 5.
 
    If the Mullvad nodes are missing (`tailscale exit-node list | grep -c
    mullvad` inside the container prints 0), restart the container once and
-   check the Mullvad VPN settings; see things-qbittorrent README.
+   check that the device is in Settings → Mullvad VPN (device limit) and that
+   the ACL allows `autogroup:internet`.
 4. **Transmission still reachable:** open Transmission from the Umbrel home
    screen; in Radarr/Sonarr, Settings → Download Clients → Transmission →
    **Test** (host `transmission_server_1`, port `9091`).
@@ -137,6 +139,17 @@ step 5.
 5. **Reboot** the Umbrel, then repeat test 2.
 6. **Radarr/Sonarr → Transmission** test passes, and the Umbrel UI opens
    Transmission.
+
+## Test results
+
+2026-10-16, Mullvad `jp-tyo-wg-001`, version 1.104.1-1/-2: ipleak torrent
+address = Mullvad only; kill switch with the sidecar stopped blocked
+Transmission's internet traffic while Radarr still reached it; after a
+Transmission restart the watchdog recreated the sidecar; after a reboot the
+sidecar was attached 13 s after Transmission (before the event-listener fix)
+and ipleak still showed only the Mullvad address; Radarr/Sonarr download
+client test and the Umbrel UI worked. With the sidecar detached, ipleak saw
+the home IP despite `bind-address-ipv4` (tracker announces).
 
 ## Known limits
 
