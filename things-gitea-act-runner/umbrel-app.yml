@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-gitea-act-runner
 category: developer
 name: Gitea Runner
-version: "5.1.0"
+version: "5.1.1"
 tagline: Gitea Actions runner with its own Docker-in-Docker daemon
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg
 description: >-
@@ -14,7 +14,7 @@ description: >-
 
   Jobs run in a separate privileged Docker-in-Docker daemon. The host Docker socket is not used and the daemon is not reachable from other apps.
 releaseNotes: >-
-  Updated images: gitea/runner 5.0.0 -> 5.1.0.
+  Updated images: docker 29.9.0-dind -> 29.9.1-dind. gitea/runner 5.1.0 -> 5.1.1.
 
 developer: Gitea
 website: https://gitea.com/gitea/runner
