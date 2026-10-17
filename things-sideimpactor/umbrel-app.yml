@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-sideimpactor
 category: developer
 name: Side Impactor
-version: "main-202610170700"
+version: "main-202610171600"
 tagline: Sign and install IPA files on an iPhone from the browser
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-sideimpactor/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   It needs HTTPS: open it through things-caddy at https://sideload.<your domain>:30443 (LAN/Tailscale, Tinyauth login). The Umbrel home-screen icon does not work. A small relay included in this app lets the page reach Apple's servers; it only connects to the Apple hosts Side Impactor needs.
 releaseNotes: >-
-  Renamed to "Side Impactor". No other changes.
+  Fix: the page was downloaded as a file instead of shown (upstream nginx config sent it as application/octet-stream, lbr77/SideImpactor#3).
 
 developer: lbr77
 website: https://github.com/lbr77/SideImpactor
