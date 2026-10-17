@@ -14,7 +14,7 @@ into the Umbrel.
 
 | Service | Image | What |
 |---------|-------|------|
-| `web` | `ghcr.io/lbr77/sideimpactor` (`main`, pinned by digest) | upstream's frontend (nginx, port 3000) |
+| `web` | `ghcr.io/kic2807/sideimpactor` (built here from upstream `main`) | upstream's frontend (nginx, port 3000) |
 | `wisp` | `ghcr.io/kic2807/wisp-relay` (this repo, `.github/wisp-relay`) | Wisp WebSocket relay at `/wisp/` |
 
 The page reaches Apple's servers (login, certificates, provisioning) through
@@ -29,8 +29,17 @@ itunes.apple.com`, `gsa.apple.com` and `developerservices2.apple.com`, port
 Caddy serves both on one origin: `sideload.<domain>/wisp/*` → `wisp`,
 everything else → `web`. The host is private (LAN/Tailscale + Tinyauth).
 
-Upstream publishes only the moving `main` tag; the store's update job follows
-its digest and sets the version to `main-<UTC time found>`.
+Upstream's own image (`ghcr.io/lbr77/sideimpactor`) stopped being published
+in April 2026 and misses later login fixes, so `.github/workflows/build-sideimpactor.yml`
+builds the frontend from upstream `main` daily (new commits only), with the
+nginx MIME fix for lbr77/SideImpactor#3 (without it the browser downloads
+the page as a file). Tag: `<commit date YYYY.MMDD.HHMM>-<short sha>`; the
+update job then updates this app.
+
+**Apple login 503:** in October 2026 Apple's login server answered Side
+Impactor's login with HTTP 503, also on the developer's hosted site. Newer
+builds retry and show "temporarily unavailable"; if it persists, it is an
+upstream/Apple issue, not this setup.
 
 ## Setup
 

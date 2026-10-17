@@ -34,10 +34,10 @@
       "always_review": ["major"],
       "automerge": ["minor", "patch"]
     },
-    "ghcr.io/lbr77/sideimpactor@main": {
-      "_comment": "Upstream publishes only the moving 'main' tag: follow its digest, version main-<UTC time found>.",
-      "moving": "main",
-      "automerge": ["build"]
+    "ghcr.io/kic2807/sideimpactor": {
+      "_comment": "Built by .github/workflows/build-sideimpactor.yml from upstream main; tag <commit date YYYY.MMDD.HHMM>-<sha>.",
+      "tag": "^(?P<v>\\d{4}\\.\\d{4}\\.\\d{4})-[0-9a-f]{7}$",
+      "automerge": ["major", "minor", "patch", "build"]
     },
     "ghcr.io/kic2807/wisp-relay": {
       "_comment": "Built by .github/workflows/build-wisp-relay.yml; tag <wisp-js version>-r<REVISION>.",
@@ -74,6 +74,6 @@
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
     "things-komga": { "primary": "gotson/komga" },
-    "things-sideimpactor": { "primary": "ghcr.io/lbr77/sideimpactor@main" }
+    "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" }
   }
 }

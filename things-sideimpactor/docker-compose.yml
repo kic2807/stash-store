@@ -1,7 +1,7 @@
 version: "3.7"
 
 # SideImpactor: browser-based IPA signing and install over WebUSB. Two parts:
-#   web   upstream's frontend image (nginx, port 3000)
+#   web   upstream's frontend, built here from upstream main (nginx, port 3000)
 #   wisp  relay at /wisp/ that the page uses to reach Apple's servers
 #         (ghcr.io/kic2807/wisp-relay, built in this repo, Apple hosts only)
 # Both must be served on one HTTPS origin (WebUSB needs a secure context):
@@ -10,20 +10,11 @@ version: "3.7"
 
 services:
   web:
-    image: ghcr.io/lbr77/sideimpactor:main@sha256:e495cd9edfa5ed290a024ce432bf85f454e6abde91ef51f6ccfad45d6097713e
+    # Built in this repo from upstream main (.github/workflows/build-sideimpactor.yml):
+    # upstream's own image stopped at 2026-04-13. Includes the nginx MIME fix
+    # for lbr77/SideImpactor#3.
+    image: ghcr.io/kic2807/sideimpactor:2026.0729.0513-168eb2b@sha256:49aaf742c154736fbd35fe63cfff38b627e29586f1b527373eb2f80589b68ae8
     restart: on-failure
-    # Upstream bug (lbr77/SideImpactor#3): the image's nginx config has a
-    # server-level `types { application/wasm wasm; }` block, which replaces
-    # nginx's whole MIME map, so index.html is sent as
-    # application/octet-stream and the browser downloads it. Remove that
-    # block at start; nginx's default mime.types (included at http level)
-    # already maps .wasm and .html. Then run the image's normal entrypoint.
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        sed -i '/^    types {/,/^    }/d' /etc/nginx/conf.d/default.conf
-        nginx -t || exit 1
-        exec /docker-entrypoint.sh nginx -g 'daemon off;'
 
   wisp:
     image: ghcr.io/kic2807/wisp-relay:0.5.0-r1@sha256:2da776e1b9aed9ee5668eae3c5fcf12e1f87107e80ac4fb4fbda902ca67f317b
