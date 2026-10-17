@@ -23,6 +23,7 @@ ICONS = {
     "things-tinyauth": ("tinyauth", "#eef3f8", 0.74),
     "things-transmission-vpn": ("private-internet-access", "#ffffff", 0.68),
     "things-gitea-act-runner": ("gitea", "#ffffff", 0.74),
+    "things-sideimpactor": ("apple", "#ffffff", 0.6),
 }
 
 

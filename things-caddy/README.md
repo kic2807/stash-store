@@ -250,6 +250,7 @@ Alternatives not used (kept for reference):
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `indexer.` | `prowlarr_server_1:9696` | private + Tinyauth |
 | `download.` | `transmission_server_1:9091` | private + Tinyauth |
+| `sideload.` | `/wisp/*` → `things-sideimpactor_wisp_1:8080`, rest → `things-sideimpactor_web_1:3000` | private + Tinyauth |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked

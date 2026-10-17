@@ -1,0 +1,23 @@
+version: "3.7"
+
+# SideImpactor: browser-based IPA signing and install over WebUSB. Two parts:
+#   web   upstream's frontend image (nginx, port 3000)
+#   wisp  relay at /wisp/ that the page uses to reach Apple's servers
+#         (ghcr.io/kic2807/wisp-relay, built in this repo, Apple hosts only)
+# Both must be served on one HTTPS origin (WebUSB needs a secure context):
+# things-caddy routes sideload.<domain>/wisp/* to `wisp` and the rest to `web`.
+# No app_proxy (plain HTTP would not work); the manifest port is a placeholder.
+
+services:
+  web:
+    image: ghcr.io/lbr77/sideimpactor:main@sha256:e495cd9edfa5ed290a024ce432bf85f454e6abde91ef51f6ccfad45d6097713e
+    restart: on-failure
+
+  wisp:
+    image: ghcr.io/kic2807/wisp-relay:0.5.0-r1@sha256:2da776e1b9aed9ee5668eae3c5fcf12e1f87107e80ac4fb4fbda902ca67f317b
+    restart: on-failure
+    read_only: true
+    cap_drop:
+      - all
+    security_opt:
+      - no-new-privileges:true

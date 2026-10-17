@@ -34,6 +34,16 @@
       "always_review": ["major"],
       "automerge": ["minor", "patch"]
     },
+    "ghcr.io/lbr77/sideimpactor@main": {
+      "_comment": "Upstream publishes only the moving 'main' tag: follow its digest, version main-<UTC time found>.",
+      "moving": "main",
+      "automerge": ["build"]
+    },
+    "ghcr.io/kic2807/wisp-relay": {
+      "_comment": "Built by .github/workflows/build-wisp-relay.yml; tag <wisp-js version>-r<REVISION>.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-r(?P<r>\\d+)$",
+      "automerge": ["major", "minor", "patch", "build"]
+    },
     "pocketid/pocket-id": {
       "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
@@ -63,6 +73,7 @@
     "things-pocket-id": { "primary": "pocketid/pocket-id" },
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
-    "things-komga": { "primary": "gotson/komga" }
+    "things-komga": { "primary": "gotson/komga" },
+    "things-sideimpactor": { "primary": "ghcr.io/lbr77/sideimpactor@main" }
   }
 }

@@ -24,12 +24,14 @@ jobs:
         run: |
           image=$(sed -n 's/^ *image: *//p' things-caddy/docker-compose.yml | head -1)
           echo "image: $image"
-          for f in things-caddy/Caddyfile.example things-caddy/data/etc/Caddyfile; do
+          # Also check the example with the commented-out private hosts enabled.
+          sed -E 's/^\t# ([@\t}]|handle )/\t\1/' things-caddy/Caddyfile.example > /tmp/Caddyfile.private
+          for f in things-caddy/Caddyfile.example /tmp/Caddyfile.private things-caddy/data/etc/Caddyfile; do
             echo "== $f"
-            docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" "$image" caddy fmt --diff /etc/caddy/Caddyfile || true
+            docker run --rm -v "$(realpath $f):/etc/caddy/Caddyfile:ro" "$image" caddy fmt --diff /etc/caddy/Caddyfile || true
             # Dummy values: validate loads the Cloudflare module (which checks the
             # token's format) but does not call the API.
-            docker run --rm -v "$PWD/$f:/etc/caddy/Caddyfile:ro" \
+            docker run --rm -v "$(realpath $f):/etc/caddy/Caddyfile:ro" \
               -e CLOUDFLARE_API_TOKEN=0000000000000000000000000000000000000000 \
               -e LAN_CIDR=192.168.1.0/24 \
               "$image" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

@@ -108,6 +108,19 @@
 	# 	import tinyauth
 	# 	reverse_proxy transmission_server_1:9091
 	# }
+	# SideImpactor: page and its Apple relay on one HTTPS origin (WebUSB).
+	# @sideload host sideload.example.com
+	# handle @sideload {
+	# 	import private
+	# 	import tinyauth
+	# 	@wisp path /wisp/*
+	# 	handle @wisp {
+	# 		reverse_proxy things-sideimpactor_wisp_1:8080
+	# 	}
+	# 	handle {
+	# 		reverse_proxy things-sideimpactor_web_1:3000
+	# 	}
+	# }
 
 	# Client IP test (README). Remove after the test.
 	@ipcheck host ipcheck.example.com

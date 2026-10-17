@@ -1,0 +1,29 @@
+manifestVersion: 1
+id: things-sideimpactor
+category: developer
+name: SideImpactor
+version: "main-20261017"
+tagline: Sign and install IPA files on an iPhone from the browser
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-sideimpactor/icon.svg
+description: >-
+  SideImpactor signs IPA files with your Apple ID and installs them on an iPhone connected to your computer over WebUSB, all inside the browser (Chrome or Edge on desktop).
+
+
+  It needs HTTPS: open it through things-caddy at https://sideload.<your domain>:30443 (LAN/Tailscale, Tinyauth login). The Umbrel home-screen icon does not work. A small relay included in this app lets the page reach Apple's servers; it only connects to the Apple hosts SideImpactor needs.
+releaseNotes: ""
+
+developer: lbr77
+website: https://github.com/lbr77/SideImpactor
+dependencies: []
+repo: https://github.com/lbr77/SideImpactor
+support: https://github.com/lbr77/SideImpactor/issues
+
+port: 30108
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store
