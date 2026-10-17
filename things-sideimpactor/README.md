@@ -1,6 +1,6 @@
 # things-sideimpactor
 
-[SideImpactor](https://github.com/lbr77/SideImpactor): sign IPA files with
+[Side Impactor](https://github.com/lbr77/SideImpactor): sign IPA files with
 your Apple ID and install them on an iPhone, entirely in the browser. The
 iPhone is plugged into **the computer running the browser** (WebUSB), not
 into the Umbrel.
