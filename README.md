@@ -28,7 +28,7 @@ The apps show up under **Haus Things App Store**.
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API). | none (optional `application.yml` for OIDC) |
-| [things-komga-ko-meta](things-komga-ko-meta/README.md) | 0.1.0 | — (30109 placeholder) | Add-on for things-komga: Korean titles, synopses, characters, Korean edition covers and textless wide/square art. No web UI. | `.env` |
+| [things-komga-ko-meta](things-komga-ko-meta/README.md) | 0.1.1 | — (30109 placeholder) | Add-on for things-komga: Korean titles, synopses, characters, Korean edition covers and textless wide/square art. No web UI. | `.env` |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
