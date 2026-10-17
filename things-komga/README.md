@@ -11,8 +11,7 @@ Mihon/Tachiyomi.
 | `config/` | `/config` | database, thumbnails, logs, optional `application.yml` |
 | Umbrel `Downloads/books` (default) | `/data` | your library files |
 
-The library is the same folder Stump uses by default, so both can run side
-by side on the same files while you compare them. Change it in Umbrel:
+The library defaults to Umbrel's `Downloads/books`. Change it in Umbrel:
 right-click Komga → Settings → Folder access → **Books**.
 
 Runs as `1000:1000` (Komga's recommendation); the app data folders belong to
@@ -32,9 +31,9 @@ Umbrel login and use Komga's own accounts.
 - Kobo sync and Mihon/Tachiyomi: see Komga's docs; they use an API key from
   your Komga account settings.
 
-To reach it as `https://<name>.<domain>` through Caddy, add a public host
-(`reverse_proxy things-komga_server_1:25600`) and the name to
-cloudflare-ddns `DOMAINS`; see the things-caddy README. Do not put Tinyauth in
+Through Caddy it is the public host `comics.<domain>`
+(`things-komga_server_1:25600`, in the Caddyfile example); add
+`comics.<domain>` to cloudflare-ddns `DOMAINS`. Do not put Tinyauth in
 front of it: reader apps cannot do that login.
 
 ## Log in with Pocket ID (optional)
@@ -45,7 +44,7 @@ matches the login to a Komga user by **email**, and the email must be marked
 as verified.
 
 1. Pocket ID → OIDC Clients → Add: name `Komga`, callback URL
-   `https://<komga address>/login/oauth2/code/pocketid`, Access tab `admins`.
+   `https://comics.<domain>/login/oauth2/code/pocketid`, Access tab `admins`.
 2. Create `~/umbrel/app-data/things-komga/data/config/application.yml`
    (`chmod 600`; not in git):
 
@@ -79,10 +78,3 @@ an email-verification error, check that the email is verified in Pocket ID
 (Administration → Users), or set `oidc-email-verification: false`.
 Komga must reach `https://id.<domain>` from the Umbrel (works while `id.` is
 proxied by Cloudflare). Reader apps keep using Komga's own login / API keys.
-
-## Replacing Stump
-
-Both apps read the same `Downloads/books` folder, so you can try Komga next
-to Stump. To switch: point the Caddy `comics.` host at
-`things-komga_server_1:25600`, update the Pocket ID client callback, then
-uninstall Stump.

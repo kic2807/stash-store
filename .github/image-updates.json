@@ -28,16 +28,6 @@
       "even_minor": true,
       "automerge": ["minor", "patch"]
     },
-    "aaronleopold/stump@nightly": {
-      "_comment": "Stump is pinned to the moving 'nightly' tag: the digest is followed and the version becomes nightly-<UTC time found>.",
-      "moving": "nightly",
-      "automerge": ["build"]
-    },
-    "aaronleopold/stump": {
-      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
-      "notes": { "github": "stumpapp/stump" },
-      "automerge": ["patch"]
-    },
     "gotson/komga": {
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
       "notes": { "github": "gotson/komga" },
@@ -69,7 +59,6 @@
   "apps": {
     "things-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
     "things-gitea-act-runner": { "primary": "gitea/runner" },
-    "things-stump": { "primary": "aaronleopold/stump" },
     "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
     "things-pocket-id": { "primary": "pocketid/pocket-id" },
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },

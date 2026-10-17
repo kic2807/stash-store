@@ -16,7 +16,7 @@ description: >-
   Komga is a free and open source media server for comics, mangas, BDs, magazines and eBooks, with a web reader, OPDS, Kobo sync and an API for apps like Mihon.
 
 
-  On first open, create the admin account. Then add a library pointing at /data (Downloads/books by default, the same folder Stump uses; pick another folder in the app's settings under Folder access).
+  On first open, create the admin account. Then add a library pointing at /data (Downloads/books by default; pick another folder in the app's settings under Folder access).
 
 
   Reader apps use the same address and port. Their endpoints (/api, /opds, /kobo) skip Umbrel login and use Komga's own login.

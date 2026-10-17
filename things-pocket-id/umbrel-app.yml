@@ -6,7 +6,7 @@ version: "2.18.0"
 tagline: Passkey-only single sign-on (OpenID Connect) for your apps
 icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/pocket-id.svg
 description: >-
-  Pocket ID is an OpenID Connect provider that signs users in with passkeys only, no passwords. Apps with OIDC support (Immich, Jellyfin, RomM, Stump) log in through it directly; apps without it are protected through Tinyauth (things-tinyauth) and Caddy.
+  Pocket ID is an OpenID Connect provider that signs users in with passkeys only, no passwords. Apps with OIDC support (Immich, Jellyfin, RomM, Komga) log in through it directly; apps without it are protected through Tinyauth (things-tinyauth) and Caddy.
 
 
   Opening the app from the home screen does nothing: Pocket ID only works at its own address (https://id.<your domain>) served by things-caddy. Before starting, create the .env file and the encryption key described in the store README, then restart the app.

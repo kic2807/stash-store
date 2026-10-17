@@ -77,7 +77,7 @@
 	}
 	@comics host comics.example.com
 	handle @comics {
-		reverse_proxy things-stump_server_1:10801
+		reverse_proxy things-komga_server_1:25600
 	}
 
 	# Private: LAN/Tailscale only, plus Tinyauth (Pocket ID passkey sign-in).

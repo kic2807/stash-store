@@ -21,6 +21,6 @@ services:
     volumes:
       # Database, thumbnails, logs, optional application.yml (OIDC)
       - ${APP_DATA_DIR}/data/config:/config
-      # Library. Defaults to Downloads/books (the same folder as Stump);
+      # Library. Defaults to Downloads/books;
       # change it in the app's settings (Folder access -> Books).
       - ${UMBREL_ROOT}/data/storage/downloads/books:/data

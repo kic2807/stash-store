@@ -3,7 +3,7 @@
 [Pocket ID](https://pocket-id.org) 2.x: a small OpenID Connect provider that
 signs users in with **passkeys only** (no passwords).
 
-- Apps with OIDC (Immich, Jellyfin, RomM, Stump) log in through it directly.
+- Apps with OIDC (Immich, Jellyfin, RomM, Komga) log in through it directly.
 - Apps without it (Radarr, Sonarr, Prowlarr, Transmission) are protected by
   [things-tinyauth](../things-tinyauth/README.md), which signs in through Pocket ID.
 
@@ -82,7 +82,7 @@ app gets those plus:
 | Immich | `https://photos.<domain>/auth/login`, `https://photos.<domain>/user-settings`, `app.immich:///oauth-callback` | Administration → Settings → Authentication → OAuth |
 | Jellyfin | `https://watch.<domain>/sso/OID/redirect/pocketid` | Dashboard → Plugins → **SSO Authentication** (9p4) → provider named `pocketid` |
 | RomM | `https://games.<domain>/api/oauth/openid` | RomM app settings → environment: `OIDC_ENABLED=true`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI` (the callback), `OIDC_SERVER_APPLICATION_URL=https://id.<domain>`; check RomM's OIDC docs for `OIDC_PROVIDER` |
-| Stump | `https://comics.<domain>/api/v2/auth/oidc/callback` | `things-stump` `.env` (see its README) |
+| Komga | `https://comics.<domain>/login/oauth2/code/pocketid` | `things-komga` `config/application.yml` (see its README) |
 
 **The app's server must reach `https://id.<domain>` too**, not only your
 browser (Pocket ID docs). From the Umbrel, its own WAN address is refused by

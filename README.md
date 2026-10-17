@@ -27,8 +27,7 @@ The apps show up under **Haus Things App Store**.
 | [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
-| [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
-| [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API); candidate to replace Stump. | none (optional `application.yml` for OIDC) |
+| [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API). | none (optional `application.yml` for OIDC) |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
@@ -41,7 +40,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, stump, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -112,7 +111,6 @@ needed, just **Merge**). A change needs review when:
 | docker (dind) | moby/moby releases | — | minor, patch |
 | docker (cli, watchdog) | moby/moby releases | — | minor, patch |
 | tailscale | none (links only) | — | minor, patch |
-| aaronleopold/stump (`nightly`) | none: follows the tag's digest | — | every new build |
 | gotson/komga | GitHub releases | major | minor, patch |
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
 | ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |
