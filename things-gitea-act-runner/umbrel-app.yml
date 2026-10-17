@@ -4,7 +4,7 @@ category: developer
 name: Gitea Runner
 version: "5.1.1"
 tagline: Gitea Actions runner with its own Docker-in-Docker daemon
-icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-gitea-act-runner/icon.svg
 description: >-
   Background service with no web UI. Opening the app from the home screen does nothing; check the runner in Gitea under Settings -> Actions -> Runners.
 

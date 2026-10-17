@@ -9,9 +9,9 @@ folderAccess:
         targetPath: /data
 category: media
 name: Komga
-version: "1.29.1"
+version: "1.29.1-1"
 tagline: Media server for comics, manga, BDs and ebooks
-icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/komga.svg
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-komga/icon.svg
 description: >-
   Komga is a free and open source media server for comics, mangas, BDs, magazines and eBooks, with a web reader, OPDS, Kobo sync and an API for apps like Mihon.
 
@@ -20,7 +20,9 @@ description: >-
 
 
   Reader apps use the same address and port. Their endpoints (/api, /opds, /kobo) skip Umbrel login and use Komga's own login.
-releaseNotes: ""
+releaseNotes: >-
+  New square app icon (matches the other Umbrel apps). No other changes.
+
 
 developer: Gauthier Roebroeck
 website: https://komga.org

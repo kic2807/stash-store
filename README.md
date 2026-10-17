@@ -176,6 +176,9 @@ workflow changes).
 - Never mount the Docker socket, except where the README says why and the
   owner agreed (things-transmission-vpn watchdog).
 - Pin every image as `tag@sha256:digest`.
+- Icons: a full square image (Umbrel rounds the corners). Transparent logos
+  look like floating shapes; add the app to `.github/icons/make_icons.py`,
+  run it, and use `https://raw.githubusercontent.com/kic2807/things-store/main/<app>/icon.svg`.
 - Secrets and infrastructure details only in server-side files, never in git.
 
 References: [community store template](https://github.com/getumbrel/umbrel-community-app-store),

@@ -2,15 +2,17 @@ manifestVersion: 1
 id: things-pocket-id
 category: networking
 name: Pocket ID
-version: "2.18.0"
+version: "2.18.0-1"
 tagline: Passkey-only single sign-on (OpenID Connect) for your apps
-icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/pocket-id.svg
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-pocket-id/icon.svg
 description: >-
   Pocket ID is an OpenID Connect provider that signs users in with passkeys only, no passwords. Apps with OIDC support (Immich, Jellyfin, RomM, Komga) log in through it directly; apps without it are protected through Tinyauth (things-tinyauth) and Caddy.
 
 
   Opening the app from the home screen does nothing: Pocket ID only works at its own address (https://id.<your domain>) served by things-caddy. Before starting, create the .env file and the encryption key described in the store README, then restart the app.
-releaseNotes: ""
+releaseNotes: >-
+  New square app icon (matches the other Umbrel apps). No other changes.
+
 
 developer: Pocket ID
 website: https://pocket-id.org

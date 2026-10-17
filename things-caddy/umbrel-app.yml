@@ -2,9 +2,9 @@ manifestVersion: 1
 id: things-caddy
 category: networking
 name: Caddy
-version: "2.11.7-1"
+version: "2.11.7-2"
 tagline: Reverse proxy with a wildcard certificate and forward auth
-icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-caddy/icon.svg
 description: >-
   Background service with no web UI. Opening the app from the home screen does nothing; check the logs in the app's settings instead.
 
@@ -14,7 +14,7 @@ description: >-
 
   Before starting, create the .env file and the Caddyfile described in the store README in the app data folder, then restart the app.
 releaseNotes: >-
-  Fixes "exec /usr/bin/caddy: operation not permitted" on start (image rebuilt without file capabilities).
+  New square app icon (matches the other Umbrel apps). No other changes.
 
 developer: Caddy
 website: https://caddyserver.com
