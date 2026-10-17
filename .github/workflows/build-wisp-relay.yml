@@ -1,0 +1,97 @@
+name: Build wisp-relay
+
+# Builds ghcr.io/kic2807/wisp-relay:<wisp-js version>-r<REVISION> (linux/amd64)
+# for things-sideimpactor when that tag does not exist yet. Bump
+# .github/wisp-relay/REVISION for a rebuild with the same wisp-js version.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/wisp-relay/**
+      - .github/workflows/build-wisp-relay.yml
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-wisp-relay
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/wisp-relay
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick tag
+        id: v
+        run: |
+          wisp=$(python3 -c "import json;print(json.load(open('.github/wisp-relay/package.json'))['dependencies']['@mercuryworkshop/wisp-js'])")
+          rev=$(cat .github/wisp-relay/REVISION)
+          tag="${wisp}-r${rev}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          token=$(curl -s "https://ghcr.io/token?scope=repository:kic2807/wisp-relay:pull" | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" "https://ghcr.io/v2/kic2807/wisp-relay/manifests/$tag")
+          if [ "$code" = 200 ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "$IMAGE:$tag already exists"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.v.outputs.build == 'true'
+
+      - name: Build and test
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/wisp-relay
+          platforms: linux/amd64
+          load: true
+          tags: wisp-relay:test
+
+      - name: Health check and allowlist test
+        if: steps.v.outputs.build == 'true'
+        run: |
+          docker run -d --name relay --read-only --cap-drop all --security-opt no-new-privileges:true -p 18080:8080 wisp-relay:test
+          sleep 3
+          curl -sf http://127.0.0.1:18080/healthz
+          docker logs relay
+
+      - uses: docker/login-action@v3
+        if: steps.v.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/wisp-relay
+          platforms: linux/amd64
+          # Provenance makes the tag a multi-platform index, as update_images.py expects.
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Wisp relay (Apple hosts only) for things-sideimpactor
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+
+      - name: Digest
+        if: steps.v.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"
