@@ -1,0 +1,128 @@
+name: Build sideimpactor
+
+# Builds ghcr.io/kic2807/sideimpactor (linux/amd64) from upstream
+# lbr77/SideImpactor main, because upstream stopped publishing Docker images
+# in April 2026. Tag: <commit date UTC YYYY.MMDD.HHMM>-<short sha>, built only
+# when that tag does not exist yet. The nginx MIME fix for
+# lbr77/SideImpactor#3 is applied before the build. Runs daily before
+# "Update images", which then opens the things-sideimpactor PR.
+
+on:
+  schedule:
+    # Daily at 03:38 KST (18:38 UTC)
+    - cron: "38 18 * * *"
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/build-sideimpactor.yml
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Upstream commit or branch (empty = main)"
+        required: false
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-sideimpactor
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/sideimpactor
+  UPSTREAM: lbr77/SideImpactor
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pick upstream commit and tag
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ref="${{ inputs.ref }}"; ref="${ref:-main}"
+          read -r sha date < <(gh api "repos/$UPSTREAM/commits/$ref" --jq '.sha + " " + .commit.committer.date')
+          tag="$(date -u -d "$date" +%Y.%m%d.%H%M)-${sha:0:7}"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "upstream $ref = $sha ($date) -> $tag"
+          token=$(curl -s "https://ghcr.io/token?scope=repository:kic2807/sideimpactor:pull" | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" "https://ghcr.io/v2/kic2807/sideimpactor/manifests/$tag")
+          if [ "$code" = 200 ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "$IMAGE:$tag already exists"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.v.outputs.build == 'true'
+        with:
+          repository: ${{ env.UPSTREAM }}
+          ref: ${{ steps.v.outputs.sha }}
+          submodules: recursive
+          path: upstream
+
+      - name: Fix nginx MIME types (lbr77/SideImpactor#3)
+        if: steps.v.outputs.build == 'true'
+        run: |
+          # A server-level `types {}` block replaces nginx's whole MIME map,
+          # so index.html is served as application/octet-stream.
+          sed -i '/^    types {/,/^    }/d' upstream/nginx.conf
+          ! grep -n 'types {' upstream/nginx.conf
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.v.outputs.build == 'true'
+
+      - name: Build and test
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: upstream
+          platforms: linux/amd64
+          load: true
+          tags: sideimpactor:test
+
+      - name: Check content types
+        if: steps.v.outputs.build == 'true'
+        run: |
+          docker run -d --name web -p 13000:3000 sideimpactor:test
+          sleep 3
+          curl -s -o /dev/null -D - http://127.0.0.1:13000/ | grep -i '^content-type: text/html'
+          js=$(curl -s http://127.0.0.1:13000/ | grep -o '/assets/[^"]*\.js' | head -1)
+          echo "checking $js"
+          curl -s -o /dev/null -D - "http://127.0.0.1:13000$js" | grep -i '^content-type: .*javascript'
+
+      - uses: docker/login-action@v3
+        if: steps.v.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: upstream
+          platforms: linux/amd64
+          # Provenance makes the tag a multi-platform index, as update_images.py expects.
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Side Impactor frontend built from ${{ env.UPSTREAM }}@${{ steps.v.outputs.sha }} (nginx MIME fix)
+            org.opencontainers.image.revision=${{ steps.v.outputs.sha }}
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+            org.opencontainers.image.licenses=MIT
+
+      - name: Digest
+        if: steps.v.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"
