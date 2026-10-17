@@ -28,6 +28,7 @@ The apps show up under **Haus Things App Store**.
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API). | none (optional `application.yml` for OIDC) |
+| [things-komga-ko-meta](things-komga-ko-meta/README.md) | 0.1.0 | — (30109 placeholder) | Add-on for things-komga: Korean titles, synopses, characters, Korean edition covers and textless wide/square art. No web UI. | `.env` |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
@@ -41,7 +42,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, band-backup, komga-ko-meta)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -78,6 +79,7 @@ Files committed under an app's `data/` are copied on **fresh installs only**.
 6. Official **Transmission** → **things-transmission-vpn** (`.env` before installing) → its README tests (ipleak, kill switch, reattach, reboot).
 7. Official **Immich** → **things-band-backup** → `.env` (Immich API key, BAND login).
 8. Uncomment the private hosts in the Caddyfile / connect OIDC apps to Pocket ID one by one.
+9. **things-komga** → libraries → **things-komga-ko-meta** → `.env` (Komga admin API key).
 
 things-gitea-act-runner is not part of the install.
 
@@ -136,8 +138,9 @@ wait for review.
 Rebuild by hand: Actions → Build caddy-cloudflare → Run workflow (optionally
 pin versions; tick *force* to overwrite an existing tag).
 
-`things-band-backup` is not part of this: its image is released by hand from
-the band-backup repo (see its README).
+`things-band-backup` and `things-komga-ko-meta` are not part of this: their
+images are released by hand from the band-backup and komga-ko-meta repos (see
+their READMEs).
 
 Merged updates only make the update button appear in Umbrel; nothing is
 installed until you press it. Run `python3 .github/scripts/update_images.py`

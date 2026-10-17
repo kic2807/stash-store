@@ -1,0 +1,33 @@
+manifestVersion: 1
+id: things-komga-ko-meta
+category: media
+name: Komga Korean Metadata
+version: "0.1.0"
+tagline: Korean titles, synopses, characters and artwork for Komga
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-komga-ko-meta/icon.png
+description: >-
+  Background add-on for Komga with no web UI. Opening it from the home screen does nothing; check its log.
+
+
+  For every series in Komga it fills in Korean metadata and artwork: the Korean title, synopsis, publisher, genres, authors and status from the Korean edition (Ridibooks), character names as used in the Korean edition (Wikidata, AniList), the Korean edition cover, and textless wide and square key art (Kitsu, AniList, optionally TMDB). It only fills empty fields and never changes locked ones. New series are picked up as soon as Komga adds them.
+
+
+  Before starting, create the .env file with a Komga admin API key in the app data folder (see the store README), then restart the app.
+releaseNotes: ""
+
+developer: kic2807
+website: https://github.com/kic2807/komga-ko-meta
+dependencies:
+  - things-komga
+repo: https://github.com/kic2807/komga-ko-meta
+support: https://github.com/kic2807/komga-ko-meta/issues
+
+port: 30109
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store
