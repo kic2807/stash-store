@@ -28,6 +28,7 @@ The apps show up under **Haus Things App Store**.
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync). | none (optional `.env` for OIDC) |
+| [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API); candidate to replace Stump. | none (optional `application.yml` for OIDC) |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
@@ -112,6 +113,7 @@ needed, just **Merge**). A change needs review when:
 | docker (cli, watchdog) | moby/moby releases | — | minor, patch |
 | tailscale | none (links only) | — | minor, patch |
 | aaronleopold/stump (`nightly`) | none: follows the tag's digest | — | every new build |
+| gotson/komga | GitHub releases | major | minor, patch |
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
 | ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |

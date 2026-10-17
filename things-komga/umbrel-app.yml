@@ -1,0 +1,42 @@
+manifestVersion: 1
+id: things-komga
+folderAccess:
+  - id: umbrel-downloads:books
+    name: Books
+    note: Comics, manga and ebooks for your libraries. Available inside Komga at /data.
+    mounts:
+      - service: server
+        targetPath: /data
+category: media
+name: Komga
+version: "1.29.1"
+tagline: Media server for comics, manga, BDs and ebooks
+icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/komga.svg
+description: >-
+  Komga is a free and open source media server for comics, mangas, BDs, magazines and eBooks, with a web reader, OPDS, Kobo sync and an API for apps like Mihon.
+
+
+  On first open, create the admin account. Then add a library pointing at /data (Downloads/books by default, the same folder Stump uses; pick another folder in the app's settings under Folder access).
+
+
+  Reader apps use the same address and port. Their endpoints (/api, /opds, /kobo) skip Umbrel login and use Komga's own login.
+releaseNotes: ""
+
+developer: Gauthier Roebroeck
+website: https://komga.org
+dependencies: []
+repo: https://github.com/gotson/komga
+support: https://github.com/gotson/komga/issues
+
+port: 25600
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+permissions:
+  - STORAGE_DOWNLOADS
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

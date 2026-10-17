@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: things-komga_server_1
+      APP_PORT: 25600
+      # Komga has its own login. Reader apps (OPDS, Kobo sync, Tachiyomi/Mihon
+      # and other API clients) cannot send Umbrel's login cookie, so their
+      # endpoints skip Umbrel login. The web UI itself stays behind it.
+      PROXY_AUTH_WHITELIST: "/api/*,/opds/*,/kobo/*"
+
+  server:
+    image: gotson/komga:1.29.1@sha256:9fa656e8259bbd75c0f654bdfa91abf2b4813cbf4f40e80eb292495446ffdf1f
+    restart: on-failure
+    # Komga's docs recommend running as a regular user; app data folders on
+    # Umbrel belong to 1000:1000.
+    user: "1000:1000"
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      # Database, thumbnails, logs, optional application.yml (OIDC)
+      - ${APP_DATA_DIR}/data/config:/config
+      # Library. Defaults to Downloads/books (the same folder as Stump);
+      # change it in the app's settings (Folder access -> Books).
+      - ${UMBREL_ROOT}/data/storage/downloads/books:/data

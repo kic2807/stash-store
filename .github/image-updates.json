@@ -38,6 +38,12 @@
       "notes": { "github": "stumpapp/stump" },
       "automerge": ["patch"]
     },
+    "gotson/komga": {
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "gotson/komga" },
+      "always_review": ["major"],
+      "automerge": ["minor", "patch"]
+    },
     "pocketid/pocket-id": {
       "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
@@ -67,6 +73,7 @@
     "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
     "things-pocket-id": { "primary": "pocketid/pocket-id" },
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
-    "things-transmission-vpn": { "primary": "tailscale/tailscale" }
+    "things-transmission-vpn": { "primary": "tailscale/tailscale" },
+    "things-komga": { "primary": "gotson/komga" }
   }
 }
