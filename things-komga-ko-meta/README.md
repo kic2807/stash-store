@@ -17,8 +17,10 @@ For each series:
 
 It only fills empty fields; locked fields are never changed. Links to the
 matched AniList / MyAnimeList / Ridibooks / Wikidata pages are added to each
-series. To fix a wrong match, edit the series' AniList link in Komga to the
-right `https://anilist.co/manga/<id>`; it takes priority over searching.
+series. To fix a wrong or missing match, add or edit the series' AniList link
+in Komga (`https://anilist.co/manga/<id>`): it takes priority over searching,
+and the add-on picks it up right away. Values from a wrong match stay unless
+you run `push --series <seriesId> --overwrite` (see below).
 
 ## Layout
 

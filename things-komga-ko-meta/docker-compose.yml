@@ -11,7 +11,7 @@ version: "3.7"
 services:
   meta:
     # Released by hand from github.com/kic2807/komga-ko-meta (tag vX.Y.Z).
-    image: ghcr.io/kic2807/komga-ko-meta:0.1.1@sha256:4cbed67ae807e27d9aa252f88a0307dff08f5b97b6731d6d785ead82f362465f
+    image: ghcr.io/kic2807/komga-ko-meta:0.1.2@sha256:640f06a3ab7df7ce5e6dfe37b7c4a86da0a987780914296d5391697dc0f7d14d
     restart: on-failure
     user: "1000:1000"
     read_only: true

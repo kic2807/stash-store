@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-komga-ko-meta
 category: media
 name: Komga Korean Metadata
-version: "0.1.1"
+version: "0.1.2"
 tagline: Korean titles, synopses, characters and artwork for Komga
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-komga-ko-meta/icon.png
 description: >-
@@ -14,7 +14,7 @@ description: >-
 
   Before starting, create the .env file with a Komga admin API key in the app data folder (see the store README), then restart the app.
 releaseNotes: >-
-  Fixes "Komga not reachable ... 400": Komga rejected the container name as Host header. No other changes.
+  An AniList link added or changed in Komga is now picked up right away instead of after the 7-day retry. No other changes.
 
 developer: kic2807
 website: https://github.com/kic2807/komga-ko-meta
